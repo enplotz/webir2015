@@ -18,6 +18,10 @@ NEWSPIDER_MODULE = 'gscholar_scraper.spiders'
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
 USER_AGENT = 'gscholar_scraper (+http://www.isg.uni-konstanz.de/teaching/webir/)'
 
+FEED_EXPORTERS = {
+    'sqlite' : 'gscholar_scraper.exporters.database.SQLiteItemExporter'
+}
+
 # Configure maximum concurrent requests performed by Scrapy (default: 16)
 #CONCURRENT_REQUESTS=32
 

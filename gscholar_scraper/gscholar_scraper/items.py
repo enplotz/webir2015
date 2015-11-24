@@ -9,7 +9,9 @@ import scrapy
 
 
 class CategoryItem(scrapy.Item):
+    sqlite_keys = [["name"]]
     # Name of the category
     name = scrapy.Field()
     # Sub-categories (we will use a dict here)
     subs = scrapy.Field()
+    last_updated = scrapy.Field()

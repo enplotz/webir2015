@@ -1,17 +1,15 @@
 from twisted.internet import reactor
 import scrapy
-from scrapy.crawler import CrawlerRunner
+from scrapy.crawler import CrawlerProcess
 from scrapy.utils.log import configure_logging
+from scrapy.utils.project import get_project_settings
 from spiders.categories import CategoriesSpider
 
 configure_logging({'LOG_FORMAT': '%(levelname)s: %(message)s'})
-runner = CrawlerRunner()
 
-# add spiders here
-runner.crawl(CategoriesSpider)
+# TODO get settings to work with FEED_EXPORTERS!
+proc = CrawlerProcess()
 
+proc.crawl(CategoriesSpider())
 
-d = runner.join()
-d.addBoth(lambda _ : reactor.stop())
-
-reactor.run() # block here until all jobs are finished
+proc.start() # block here
