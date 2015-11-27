@@ -16,7 +16,13 @@ NEWSPIDER_MODULE = 'gscholar_scraper.spiders'
 
 
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
-USER_AGENT = 'gscholar_scraper (+http://www.isg.uni-konstanz.de/teaching/webir/)'
+# USER_AGENT = 'gscholar_scraper (+http://www.isg.uni-konstanz.de/teaching/webir/)'
+
+USER_AGENT = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_1) AppleWebKit/601.2.7 (KHTML, like Gecko) Version/9.0.1 Safari/601.2.7'
+
+CONCURRENT_REQUESTS = 1
+DOWNLOAD_DELAY = 1
+RANDOMIZE_DOWNLOAD_DELAY = True
 
 FEED_EXPORTERS = {
     'sqlite' : 'gscholar_scraper.exporters.database.SQLiteItemExporter'
