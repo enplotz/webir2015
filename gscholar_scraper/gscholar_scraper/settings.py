@@ -14,14 +14,14 @@ BOT_NAME = 'gscholar_scraper'
 SPIDER_MODULES = ['gscholar_scraper.spiders']
 NEWSPIDER_MODULE = 'gscholar_scraper.spiders'
 
-
+LOG_LEVEL = 'INFO'
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
 # USER_AGENT = 'gscholar_scraper (+http://www.isg.uni-konstanz.de/teaching/webir/)'
 
 USER_AGENT = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_1) AppleWebKit/601.2.7 (KHTML, like Gecko) Version/9.0.1 Safari/601.2.7'
 
 CONCURRENT_REQUESTS = 1
-DOWNLOAD_DELAY = 1
+DOWNLOAD_DELAY = 4
 RANDOMIZE_DOWNLOAD_DELAY = True
 
 FEED_EXPORTERS = {
@@ -71,9 +71,9 @@ DEFAULT_REQUEST_HEADERS = {
 
 # Configure item pipelines
 # See http://scrapy.readthedocs.org/en/latest/topics/item-pipeline.html
-#ITEM_PIPELINES = {
-#    'gscholar_scraper.pipelines.SomePipeline': 300,
-#}
+ITEM_PIPELINES = {
+   'gscholar_scraper.pipelines.GscholarScraperPipeline': 300,
+}
 
 # Enable and configure the AutoThrottle extension (disabled by default)
 # See http://doc.scrapy.org/en/latest/topics/autothrottle.html

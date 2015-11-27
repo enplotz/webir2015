@@ -33,7 +33,7 @@ class SQLiteItemExporter(BaseItemExporter):
             field = item.fields[field_name]
             value_list.append(self.serialize_field(field, field_name, str(item[field_name])))
         sql = 'INSERT OR %s INTO [%s] (%s) VALUES (%s)' % (self.on_conflict.name, item_class_name, ', '.join(field_list), ','.join(['?' for f in field_list]))
-        print sql
+        # print sql
         self.conn.execute(sql, value_list)
         self.conn.commit()
 
