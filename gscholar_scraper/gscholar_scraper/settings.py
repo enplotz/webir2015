@@ -14,15 +14,33 @@ BOT_NAME = 'gscholar_scraper'
 SPIDER_MODULES = ['gscholar_scraper.spiders']
 NEWSPIDER_MODULE = 'gscholar_scraper.spiders'
 
-LOG_LEVEL = 'INFO'
+LOG_LEVEL = 'DEBUG'
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
 # USER_AGENT = 'gscholar_scraper (+http://www.isg.uni-konstanz.de/teaching/webir/)'
 
-USER_AGENT = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_1) AppleWebKit/601.2.7 (KHTML, like Gecko) Version/9.0.1 Safari/601.2.7'
-
 CONCURRENT_REQUESTS = 1
-DOWNLOAD_DELAY = 4
-RANDOMIZE_DOWNLOAD_DELAY = True
+#DOWNLOAD_DELAY = 4
+#RANDOMIZE_DOWNLOAD_DELAY = True
+
+USER_AGENT_LIST = [
+    'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/535.7 (KHTML, like Gecko) Chrome/16.0.912.36 Safari/535.7',
+    'Mozilla/5.0 (Windows NT 6.2; Win64; x64; rv:16.0) Gecko/16.0 Firefox/16.0',
+    'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_7_3) AppleWebKit/534.55.3 (KHTML, like Gecko) Version/5.1.3 Safari/534.53.10',
+    ]
+
+HTTP_PROXY = 'http://127.0.0.1:8123'
+
+
+
+# Enable or disable downloader middlewares
+# See http://scrapy.readthedocs.org/en/latest/topics/downloader-middleware.html
+DOWNLOADER_MIDDLEWARES = {
+    'gscholar_scraper.middlewares.RandomUserAgentMiddleware': 400,
+    'gscholar_scraper.middlewares.ProxyMiddleware': 410,
+    'scrapy.downloadermiddleware.useragent.UserAgentMiddleware': None,
+}
+
+# DEPTH_LIMIT = 10
 
 FEED_EXPORTERS = {
     'sqlite' : 'gscholar_scraper.exporters.database.SQLiteItemExporter'
@@ -50,18 +68,6 @@ DEFAULT_REQUEST_HEADERS = {
   'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
   'Accept-Language': 'en',
 }
-
-# Enable or disable spider middlewares
-# See http://scrapy.readthedocs.org/en/latest/topics/spider-middleware.html
-#SPIDER_MIDDLEWARES = {
-#    'gscholar_scraper.middlewares.MyCustomSpiderMiddleware': 543,
-#}
-
-# Enable or disable downloader middlewares
-# See http://scrapy.readthedocs.org/en/latest/topics/downloader-middleware.html
-#DOWNLOADER_MIDDLEWARES = {
-#    'gscholar_scraper.middlewares.MyCustomDownloaderMiddleware': 543,
-#}
 
 # Enable or disable extensions
 # See http://scrapy.readthedocs.org/en/latest/topics/extensions.html

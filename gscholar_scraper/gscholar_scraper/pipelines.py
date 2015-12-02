@@ -8,6 +8,6 @@ import items
 
 class GscholarScraperPipeline(object):
     def process_item(self, item, spider):
-        if isinstance(item, items.GScholarItem):
+        if isinstance(item, items.CategoryItem) or isinstance(item, items.SubCategoryItem):
             spider.logger.info('Got GScholarItem <%s> with name <%s>' % (type(item).__name__, item['name']))
         return item

@@ -10,6 +10,8 @@ import scrapy
 class GScholarItem(scrapy.Item):
     updated_at = scrapy.Field()
 
+class FOSItem(GScholarItem):
+    fos = scrapy.Field()
 
 class CategoryItem(GScholarItem):
     sqlite_keys = [["name"]]
