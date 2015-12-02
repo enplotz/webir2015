@@ -1,3 +1,4 @@
 # Scrapy framework
 scrapy==1.0
 stem
+python-dotenv

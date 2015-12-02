@@ -1,5 +1,11 @@
 # -*- coding: utf-8 -*-
 
+from os.path import join, dirname
+from dotenv import load_dotenv
+
+dotenv_path = join(dirname(__file__), '.env')
+load_dotenv(dotenv_path)
+
 # Scrapy settings for gscholar_scraper project
 #
 # For simplicity, this file contains only settings considered important or
@@ -22,15 +28,25 @@ CONCURRENT_REQUESTS = 1
 #DOWNLOAD_DELAY = 4
 #RANDOMIZE_DOWNLOAD_DELAY = True
 
+# We do not want redirects to the captcha site followed
+REDIRECT_ENABLED = False
+
 USER_AGENT_LIST = [
     'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/535.7 (KHTML, like Gecko) Chrome/16.0.912.36 Safari/535.7',
     'Mozilla/5.0 (Windows NT 6.2; Win64; x64; rv:16.0) Gecko/16.0 Firefox/16.0',
     'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_7_3) AppleWebKit/534.55.3 (KHTML, like Gecko) Version/5.1.3 Safari/534.53.10',
     ]
 
-HTTP_PROXY = 'http://127.0.0.1:8123'
+HTTP_PROXY_HOST = '127.0.0.1'
+HTTP_PROXY_PORT = '8123'
+HTTP_PROXY = 'http://{0}:{1}'.format(HTTP_PROXY_HOST, HTTP_PROXY_PORT)
 
 
+# Enable or disable spider middlewares
+# See http://scrapy.readthedocs.org/en/latest/topics/spider-middleware.html
+SPIDER_MIDDLEWARES = {
+   'gscholar_scraper.middlewares.RenewTorConnectionMiddleware': 543,
+}
 
 # Enable or disable downloader middlewares
 # See http://scrapy.readthedocs.org/en/latest/topics/downloader-middleware.html

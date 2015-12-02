@@ -61,3 +61,6 @@ target/
 
 # SQLite Database
 *.db
+
+# Ignore environment variables
+.env

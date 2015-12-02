@@ -12,15 +12,13 @@ from stem.control import Controller
 
 class AuthorLabels(scrapy.Spider):
     name = "authorLabels"
+    handle_httpstatus_list = [404, 302]
 
     def __init__(self):
         dispatcher.connect(self.spider_closed, signals.spider_closed)
         f =open('stops.txt')
         self.container = f.readlines()
         self.container = [i for i in self.container if len(i)>4]
-
-        # TODO REMOVE PASSWORD FROM HERE
-
 
     def start_requests(self):
         if len(self.container) > 0:

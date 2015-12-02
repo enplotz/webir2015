@@ -33,6 +33,7 @@ class CategoriesSpider(Spider):
 
         item = ItemLoader(item=CategoryItem(), response=response)
         title = response.xpath(title_xp).extract_first()
+
         item.add_value('name', title)
         subs = []
         for sub in response.xpath('//*[@id="gs_m_rbs"]/ul/li/a'):
