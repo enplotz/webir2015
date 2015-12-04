@@ -1,35 +1,32 @@
 import scrapy
 import re
 import random
-from gscholar_scraper import items as t
+from gscholar_scraper.items import FOSItem
 from scrapy.http import Request
 from scrapy import signals
+from scrapy.loader import ItemLoader
 from scrapy.xlib.pydispatch import dispatcher
-import stem
-import stem.connection
-from stem import Signal
-from stem.control import Controller
+import gscholar_scraper.utils as utils
 
 class AuthorLabels(scrapy.Spider):
     name = "authorLabels"
-    handle_httpstatus_list = [404, 302]
+    handle_httpstatus_list = [200, 302, 400, 402, 503]
 
-    def __init__(self):
+    def __init__(self, *args, **kwargs):
+        super(self.__class__, self).__init__(*args, **kwargs)
         dispatcher.connect(self.spider_closed, signals.spider_closed)
-        f =open('stops.txt')
-        self.container = f.readlines()
-        self.container = [i for i in self.container if len(i)>4]
-
-    def start_requests(self):
-        if len(self.container) > 0:
-            tmp = random.choice(self.container)
-            self.container.remove(tmp)
-            return [ Request(url = tmp)]
+        with open('stops.txt', mode='r') as f:
+            self.container = [i for i in f.readlines() if len(i) > 4]
+        # select a random url to start at
+        start = utils.pop_random(self.container)
+        if start:
+            self.start_urls = [start]
+            # pass
+        # self.start_urls = [ 'http://ozuma.sakura.ne.jp/httpstatus/302' ]
 
     def spider_closed(self, spider):
         f2 = open('stops.txt','wb')
         f2.write("\n".join(self.container))
-        #self.controller.close()
 
     def parse(self, response):
         # for each author ID on the page,create a new authorItem
@@ -54,6 +51,9 @@ class AuthorLabels(scrapy.Spider):
                 newUrl = str(new2.group(1)).replace('\\x3d','=').replace('\\x26', '&')
                 newUrl = 'https://scholar.google.de/citations?view_op=search_authors&hl=de&mauthors' + newUrl
                 self.container.append(newUrl)
-        yield self.start_requests()[0]
+        # proceed with another random url to randomize access pattern to gscholar
+        next = utils.pop_random(self.container)
+        if next:
+            yield Request(url=next)
 
 
