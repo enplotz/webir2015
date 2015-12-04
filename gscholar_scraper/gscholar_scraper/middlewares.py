@@ -4,21 +4,16 @@ from scrapy.conf import settings
 from scrapy import log
 from stem import Signal
 from stem.control import Controller
+from fake_useragent import UserAgent
 
 IP_ENDPOINT = 'http://icanhazip.com/'
-user_agent = 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.9.0.7) Gecko/2009021910 Firefox/3.0.7'
-headers = {'User-Agent' : user_agent}
 
-class RandomUserAgentMiddleware(object):
+ua = UserAgent()
+ua.update()
+
+class LoggerMiddleware(object):
     def process_request(self, request, spider):
-        ua = random.choice(settings.get('USER_AGENT_LIST'))
-        if ua:
-            request.headers.setdefault('User-Agent', ua)
-            #this is just to check which user agent is being used for request
-            # spider.log(
-            #     u'User-Agent: {} {}'.format(request.headers.get('User-Agent'), request),
-            #     level=log.DEBUG
-            # )
+        spider.logger.debug(u'User-Agent: {0} {1}'.format(request.headers['User-Agent'], request))
 
 
 class ProxyMiddleware(object):
