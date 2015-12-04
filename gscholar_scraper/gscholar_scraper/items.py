@@ -6,12 +6,26 @@
 # http://doc.scrapy.org/en/latest/topics/items.html
 
 import scrapy
+import urllib2
+from scrapy.loader.processors import MapCompose
+
 
 class GScholarItem(scrapy.Item):
     updated_at = scrapy.Field()
 
+def fix_string(input):
+    """ Fixes URL-encoded UTF-8 strings which are then again as UTF-8 in the html source
+    :param input: input strings to clean
+    :return: clean input strings in unicode
+    """
+    return map(lambda s : urllib2.unquote(s.encode('ASCII')).decode('utf-8'), input)
+
+
 class FOSItem(GScholarItem):
-    fos = scrapy.Field()
+    """ One field-of-study item.
+    """
+    field_name = scrapy.Field(input_processor=fix_string)
+
 
 class CategoryItem(GScholarItem):
     sqlite_keys = [["name"]]

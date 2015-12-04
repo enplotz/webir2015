@@ -40,9 +40,11 @@ class AuthorLabels(scrapy.Spider):
             #id = re.search('user=(.*)&', tmp).group(1)
             fos = re.findall('=label:([^"]+)"', full)
             if fos:
-                item = t.FOSItem()
-                item['fos'] = fos
-                yield item
+                for f in fos:
+                    it = ItemLoader(item=FOSItem(), response=response)
+                    self.logger.debug(f)
+                    it.add_value('field_name', f)
+                    yield it.load_item()
 
         # generate  next url
         new1 = response.xpath('//*[@id="gsc_authors_bottom_pag"]/span/button[2]').extract_first()
