@@ -31,10 +31,11 @@ CONCURRENT_REQUESTS = 1
 # We do not want redirects to the captcha site followed
 REDIRECT_ENABLED = False
 
+# RETRY_HTTP_CODES = [302, 400, 403]
 
-HTTP_PROXY_HOST = '127.0.0.1'
-HTTP_PROXY_PORT = '8123'
-HTTP_PROXY = 'http://{0}:{1}'.format(HTTP_PROXY_HOST, HTTP_PROXY_PORT)
+# Our http proxy. You can use Polipo or privoxy.
+# Use the urlparse.urlparse method to access the netloc (get rid of 'http').
+HTTP_PROXY = 'http://127.0.0.1:8123'
 
 
 # Enable or disable spider middlewares
@@ -47,8 +48,13 @@ SPIDER_MIDDLEWARES = {
 # See http://scrapy.readthedocs.org/en/latest/topics/downloader-middleware.html
 DOWNLOADER_MIDDLEWARES = {
     'scrapy.downloadermiddlewares.useragent.UserAgentMiddleware': None,
+    'scrapy.downloadermiddleware.retry.RetryMiddleware': None,
+
     'scrapy_fake_useragent.middleware.RandomUserAgentMiddleware': 400,
     'gscholar_scraper.middlewares.ProxyMiddleware': 410,
+    # TODO fix own middleware that renews tor identity
+    # 'gscholar_scraper.middlewares.ProxiedTorConnectionMiddleware' : 500,
+    'gscholar_scraper.middlewares.LoggerMiddleware' : 900,
 }
 
 # DEPTH_LIMIT = 10
@@ -91,7 +97,7 @@ DEFAULT_REQUEST_HEADERS = {
 ITEM_PIPELINES = {
     # we want to set our default values as early as possible
     'gscholar_scraper.pipelines.DefaultValuesForItem' : 0,
-   'gscholar_scraper.pipelines.GscholarScraperPipeline': 300,
+    'gscholar_scraper.pipelines.GscholarScraperPipeline': 300,
 }
 
 # Enable and configure the AutoThrottle extension (disabled by default)

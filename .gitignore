@@ -64,3 +64,6 @@ target/
 
 # Ignore environment variables
 .env
+
+# Ignore spider state directory
+crawls/

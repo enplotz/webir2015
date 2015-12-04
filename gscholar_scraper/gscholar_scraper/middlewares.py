@@ -1,8 +1,8 @@
 import random, os, urllib2, time
 
+from urlparse import urlparse
 from scrapy.conf import settings
-from scrapy import log
-from stem import Signal
+from stem import Signal, SocketClosed
 from stem.control import Controller
 from fake_useragent import UserAgent
 
@@ -21,42 +21,69 @@ class ProxyMiddleware(object):
         request.meta['proxy'] = settings.get('HTTP_PROXY')
 
 
-class RenewTorConnectionMiddleware(object):
-    def process_spider_input(self, response, spider):
-        if response.status != 200:
-            spider.logger.error("Got response status %s " % response.status)
+def make_request(url):
+    def _set_urlproxy():
+        proxy_support = urllib2.ProxyHandler(
+            {'http' : urlparse(settings.get("HTTP_PROXY")).netloc})
+        opener = urllib2.build_opener(proxy_support)
+        urllib2.install_opener(opener)
+    _set_urlproxy()
+    request = urllib2.Request(url, None, headers = {'User-Agent' : ua.random})
+    return urllib2.urlopen(request).read().rstrip()
 
-            # TODO request new identity from tor
 
-            oldIP = RenewTorConnectionMiddleware.request(IP_ENDPOINT)
-            RenewTorConnectionMiddleware.renew_connection()
-            newIP = RenewTorConnectionMiddleware.request(IP_ENDPOINT)
+def renew_connection(logger):
+    try:
+        with Controller.from_port(port = 9051) as controller:
+            pw = os.environ["TOR_CONTROL_PASSWORD"]
+            controller.authenticate(password = pw)
+            controller.signal(Signal.NEWNYM)
+    except SocketClosed as e:
+        logger.error(e)
+
+class ProxiedTorConnectionMiddleware(object):
+    def process_response(self, request, response, spider):
+        if response.status != 200 and response.headers['Location']:
+            # we probably got redirected to the captcha page
+            spider.logger.info('Response status: {0} using proxy {1} retrying request to {2}'
+                               .format(response.status, request.meta['proxy'], request.url))
+
+            # Retry a number of times, before we really need to renew the IP
+            # TODO figure out how to exactly reschedule the request for a later time and not as the next one
+            max_retries = 3
+            retries_left = int(request.headers.get('Retry-Count', max_retries))
+            if (retries_left > 0):
+                # we have still retries left
+                request.headers['Retry-Count'] = retries_left - 1
+                request.headers['User-Agent'] = ua.random
+                spider.logger.debug('Retrying ({0} left) {1}'.format(retries_left, request.url))
+                return request.replace(dont_filter=True, priority=-50)
+
+            spider.logger.error('Redirect url %s' % request.url)
+            spider.logger.error('User-Agent: %s' % request.headers['User-Agent'])
+
+            old_ip = make_request(IP_ENDPOINT)
+            renew_connection(spider.logger)
+            new_ip = make_request(IP_ENDPOINT)
             seconds = 0
 
-            while oldIP == newIP:
+            while old_ip == new_ip:
                 sleep = 2
                 time.sleep(sleep)
                 seconds += sleep
-                newIP = RenewTorConnectionMiddleware.request(IP_ENDPOINT)
-                spider.logger.info('%d seconds waiting for new IP address' % seconds)
-            spider.logger.info('Got new IP: %s' % newIP)
+                new_ip = make_request(IP_ENDPOINT)
+                spider.logger.error('%d seconds waiting for new IP address' % seconds)
+            spider.logger.error('Got new IP: %s' % new_ip)
 
+            wait = 30
+            spider.logger.debug('Waiting %s seconds for retry.' % wait)
+            time.sleep(wait)
+            # retry the request again with the new location
+            request.headers['User-Agent'] = ua.random
+            req = request.replace(dont_filter=True, priority=-50)
+            spider.logger.debug('Rescheduling request %s' % req)
+            # return req
+        return response
 
-    @classmethod
-    def request(cls, url):
-        def _set_urlproxy():
-            proxy_support = urllib2.ProxyHandler(
-                {'http':'{0}:{1}'.format(settings.get("HTTP_PROXY_HOST"), settings.get("HTTP_PROXY_PORT"))})
-            opener = urllib2.build_opener(proxy_support)
-            urllib2.install_opener(opener)
-        _set_urlproxy()
-        request = urllib2.Request(url, None, headers)
-        return urllib2.urlopen(request).read()
-
-
-    @classmethod
-    def renew_connection(cls):
-        with Controller.from_port(port = 9051) as controller:
-            controller.authenticate(password = os.getenviron.get("TOR_CONTROL_PASSWORD"))
-            controller.signal(Signal.NEWNYM)
-
+    def process_exception(self, request, exception, spider):
+        spider.logger.error('Exception with {0} in {1}'.format(request.meta['proxy'], request.url))
