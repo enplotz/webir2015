@@ -89,6 +89,8 @@ DEFAULT_REQUEST_HEADERS = {
 # Configure item pipelines
 # See http://scrapy.readthedocs.org/en/latest/topics/item-pipeline.html
 ITEM_PIPELINES = {
+    # we want to set our default values as early as possible
+    'gscholar_scraper.pipelines.DefaultValuesForItem' : 0,
    'gscholar_scraper.pipelines.GscholarScraperPipeline': 300,
 }
 

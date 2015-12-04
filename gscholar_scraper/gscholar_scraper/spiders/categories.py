@@ -45,7 +45,6 @@ class CategoriesSpider(Spider):
             req.meta['parent'] = title
             yield req
         item.add_value('subs', subs)
-        item.add_value('updated_at', ctime())
         yield item.load_item()
 
 
@@ -67,6 +66,5 @@ class CategoriesSpider(Spider):
 
             # TODO h-index url: follow or save to item
         sub_cat['publications'] = publications
-        sub_cat['updated_at'] = ctime()
         sub_cat['parent'] = response.meta.get('parent', None)
         return sub_cat
