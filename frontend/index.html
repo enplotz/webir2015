@@ -1,0 +1,51 @@
+<!DOCTYPE HTML>
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+    <!-- meta definitions -->
+    <meta charset="utf-8">
+    <!-- style sheets -->
+    <link rel="stylesheet" type="text/css" href="style/style.css" />
+    <link rel="stylesheet" type="text/css" href="style/d3.css" />
+
+    <!-- javascript libs -->
+    <script src="js/jquery-2.1.4.min.js"></script>
+    <script src="js/jquery-ui.js"></script>
+    <script src="js/d3.min.js"></script>
+    <script src="js/container.js"></script>
+    <script src="js/entity.js"></script>
+</head>
+
+<body>
+    <div id="wrapperOuter">
+        <div id="wrapper">
+
+        </div>
+        <button id="test">Test</button>
+    </div>
+</body>
+<script type="text/javascript">
+    $(function () {
+
+        var cont = new Container('#wrapper', function (obj) {
+            getExtended(obj, function(newNodes){ 
+            cont.addNodes(newNodes);
+            }); 
+        });
+        new Entity(1, function(d){
+          cont.addNodes([d])  
+        });
+        
+        function getExtended(obj, cb){
+            $.post('http://localhost:8000/ExtendedByID', {
+                class: 'Author',
+                obj: obj
+            }, 'json').done(function (data) {
+                 cb(data);   
+            });    
+        }
+
+
+        //cont.addNodes([1, 2]);
+    });
+</script>

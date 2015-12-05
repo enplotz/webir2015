@@ -1,0 +1,25 @@
+.svgResponsive {
+    /* make svg resizable*/
+    display: inline-block;
+    position: absolute;
+    shape-rendering: "geometricPrecision"
+}
+
+.nodeContainer{
+font-size:8px;
+fill:black; 
+
+text-anchor:middle; 
+}
+.nodeContainer circle {
+stroke: #FFF;
+stroke-width:5px;
+opacity:1.0;
+}
+.link {
+
+
+  stroke: #000;
+  stroke-width: 0.5px;
+
+}
