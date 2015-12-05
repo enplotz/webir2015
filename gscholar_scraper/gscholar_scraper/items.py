@@ -26,6 +26,11 @@ class FOSItem(GScholarItem):
     """
     field_name = scrapy.Field(input_processor=fix_string)
 
+class AuthorGenItem(GScholarItem):
+    fos = scrapy.Field()
+    id = scrapy.Field()
+    name = scrapy.Field()
+    cited = scrapy.Field()
 
 class CategoryItem(GScholarItem):
     sqlite_keys = [["name"]]
