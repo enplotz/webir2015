@@ -26,6 +26,7 @@ class FOSItem(GScholarItem):
     """
     field_name = scrapy.Field(input_processor=fix_string)
 
+# general author info, when searched with label:biology e.g.
 class AuthorGenItem(GScholarItem):
     fos = scrapy.Field()
     id = scrapy.Field()
@@ -39,6 +40,16 @@ class CategoryItem(GScholarItem):
     # Sub-categories (we will use a dict here)
     subs = scrapy.Field()
 
+class DocItem(GScholarItem):
+    authorid = scrapy.Field()
+    docs = scrapy.Field()
+
+
+#more detailed author info, scraped from author profiles
+class AuthorDetItem(GScholarItem):
+    measures = scrapy.Field()
+    org = scrapy.Field()
+    hasCo = scrapy.Field()
 
 class SubCategoryItem(GScholarItem):
     sqlite_keys = [["name"]]
