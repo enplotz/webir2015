@@ -60,10 +60,6 @@ DOWNLOADER_MIDDLEWARES = {
 
 # DEPTH_LIMIT = 10
 
-# FEED_EXPORTERS = {
-    # 'sqlite' : 'gscholar_scraper.exporters.database.SQLiteItemExporter'
-# }
-
 # Configure maximum concurrent requests performed by Scrapy (default: 16)
 #CONCURRENT_REQUESTS=32
 

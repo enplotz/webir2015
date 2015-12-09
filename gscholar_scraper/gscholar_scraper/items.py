@@ -90,14 +90,14 @@ class DocItem(GScholarItem):
 
 
 class CategoryItem(GScholarItem):
-    sqlite_keys = [["name"]]
+
     # Name of the category
     name = scrapy.Field()
     # Sub-categories (we will use a dict here)
     subs = scrapy.Field()
 
 class SubCategoryItem(GScholarItem):
-    sqlite_keys = [["name"]]
+
     # Name of the sub-category
     name = scrapy.Field()
     # parent category name
