@@ -9,7 +9,7 @@ from scrapy.xlib.pydispatch import dispatcher
 import gscholar_scraper.utils as utils
 
 class AuthorLabels(scrapy.Spider):
-    name = "authorLabels"
+    name = "author_labels"
     handle_httpstatus_list = [200, 302, 400, 402, 503]
 
     def __init__(self, *args, **kwargs):

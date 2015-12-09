@@ -8,7 +8,7 @@ from scrapy.xlib.pydispatch import dispatcher
 import gscholar_scraper.utils as utils
 
 class AuthorDetails(scrapy.Spider):
-    name = "authorsDetail"
+    name = "author_detail"
     handle_httpstatus_list = [200, 302, 400, 402, 503]
 
     def __init__(self, *args, **kwargs):
