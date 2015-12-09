@@ -9,13 +9,14 @@ import scrapy
 import urllib2
 from scrapy.loader.processors import TakeFirst, MapCompose, Join, Compose
 from models import DeclarativeBase
-from sqlalchemy import create_engine, Column, Integer, String, TIMESTAMP
+from sqlalchemy import create_engine, Column, Integer, String, Boolean
 from sqlalchemy.dialects import postgresql
 from sqlalchemy.ext.declarative import declarative_base, declared_attr
 
+
 class GScholarItem(scrapy.Item):
-    # updated_at = scrapy.Field()
     pass
+
 
 def fix_string(input):
     """ Fixes URL-encoded UTF-8 strings which are then again as UTF-8 in the html source
@@ -34,31 +35,33 @@ class FOSItem(GScholarItem):
 
     field_name = scrapy.Field(input_processor=fix_string, output_processor=TakeFirst())
 
-class AuthorGenItem(GScholarItem):
-    # general author info, when searched with label:biology e.g.
+
+class AuthorItem(GScholarItem):
+
 
     class Model(DeclarativeBase):
         """Sqlalchemy authors model"""
         __tablename__ = "authors"
 
         id = Column(String, primary_key=True)
-        fos = Column('fields_of_study', postgresql.ARRAY(String), nullable=True)
         name = Column(String)
-        cited = Column(Integer, nullable=True)
 
+        fos = Column('fields_of_study', postgresql.ARRAY(String), nullable=True)
+        cited = Column(Integer, nullable=True)
+        measures = Column(postgresql.ARRAY(Integer), nullable=True)
+        org = Column(String, nullable=True)
+        hasCo = Column(Boolean, nullable=True)
+
+    # general author info, when searched with label:biology e.g.
     id = scrapy.Field(output_processor=TakeFirst())
     fos = scrapy.Field()
     name = scrapy.Field(output_processor=TakeFirst())
     cited = scrapy.Field(output_processor=TakeFirst())
 
-
-class AuthorDetItem(GScholarItem):
-    #more detailed author info, scraped from author profiles
-
-    # TODO how to integrate these fields into the above authors model...
-    measures = scrapy.Field()
-    org = scrapy.Field()
-    hasCo = scrapy.Field()
+    # more detailed author info, scraped from author profiles
+    measures = scrapy.Field(input_processor=MapCompose(lambda s: int(s)))
+    org = scrapy.Field(output_processor=TakeFirst())
+    hasCo = scrapy.Field(output_processor=TakeFirst())
 
 
 class DocItem(GScholarItem):

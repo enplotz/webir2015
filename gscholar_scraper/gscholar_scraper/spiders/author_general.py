@@ -1,7 +1,7 @@
 import scrapy
 import re
 import random
-from gscholar_scraper.items import AuthorGenItem
+from gscholar_scraper.items import AuthorItem
 from scrapy.http import Request
 from scrapy import signals
 from scrapy.loader import ItemLoader
@@ -15,8 +15,6 @@ class AuthorLabels(scrapy.Spider):
     def __init__(self, *args, **kwargs):
         super(self.__class__, self).__init__(*args, **kwargs)
         dispatcher.connect(self.spider_closed, signals.spider_closed)
-        # with open('labels.txt', mode='r') as f:
-        #    self.container = [i for i in f.readlines() if len(i) > 4]
 
         # use &hl=de parameter for appropiate citecount pattern
         self.container = ['https://scholar.google.de/citations?view_op=search_authors&hl=de&mauthors=label:biology']
@@ -24,8 +22,6 @@ class AuthorLabels(scrapy.Spider):
         start = utils.pop_random(self.container)
         if start:
             self.start_urls = [start]
-            # pass
-        # self.start_urls = [ 'http://ozuma.sakura.ne.jp/httpstatus/302' ]
 
     def spider_closed(self, spider):
         f2 = open('stops_general.txt','wb')
@@ -48,7 +44,7 @@ class AuthorLabels(scrapy.Spider):
             name = re.search('alt="([^"]+)"', user)
             citecount = re.search('<div class="gsc_1usr_cby">Zitiert von: ([0-9]+)</div>', user)
             if id and name:
-                item = ItemLoader(item=AuthorGenItem(), response=response)
+                item = ItemLoader(item=AuthorItem(), response=response)
                 item.add_value('fos', currFOS)
                 item.add_value('id', id.group(1))
                 item.add_value('name', name.group(1))

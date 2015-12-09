@@ -1,6 +1,6 @@
 import scrapy
 import re
-from gscholar_scraper.items import AuthorDetItem, DocItem
+from gscholar_scraper.items import AuthorItem, DocItem
 from scrapy.http import Request
 from scrapy import signals
 from scrapy.loader import ItemLoader
@@ -14,8 +14,6 @@ class AuthorDetails(scrapy.Spider):
     def __init__(self, *args, **kwargs):
         super(self.__class__, self).__init__(*args, **kwargs)
         dispatcher.connect(self.spider_closed, signals.spider_closed)
-        # with open('labels.txt', mode='r') as f:
-        #    self.container = [i for i in f.readlines() if len(i) > 4]
 
         # author profiles with cstart and pagesize parameters
         self.container = ['https://scholar.google.de/citations?hl=de&user=TaJMF0EAAAAJ&cstart=0&pagesize=100']
@@ -31,31 +29,35 @@ class AuthorDetails(scrapy.Spider):
 
     def parse(self, response):
 
-        # find 'cstart' in the given url
-        oldStartTmp = re.search('&cstart=(\d+)&',response.url)
-        oldStart = int(oldStartTmp.group(1))
+        # Pagination parameters
+        oldStart = int(re.search('&cstart=(\d+)&', response.url).group(1))
+
+        authorID = re.search('&user=([^&]+)',response.url).group(1)
+
+        authorItem = AuthorItem()
+        authorItem['id'] = authorID
 
         #crawl 'organisation id' and 'measurements' only at the first time, we look at that author profile
         if oldStart == 0:
-                # measures has values for citetotal, cite2010, htotal, h2010, i10total, i2010
-                measures = response.xpath('//td[@class="gsc_rsb_std"]/text()').extract()
+            # measures has values for citetotal, cite2010, htotal, h2010, i10total, i2010
 
-                hasCoTmp = response.xpath('//div[@id="gsc_rsb_co"]').extract()
+            # check if the author has any coauthors listed
+            hasCo = str(len(response.xpath('//div[@id="gsc_rsb_co"]').extract()) > 0)
+            # can be crawled with another spider:
+            #  crawl https://scholar.google.de/citations?view_op=list_colleagues&hl=de&user=F4P3ghEAAAAJ
+            # for the users having hasCo true.
 
-                hasCo = str(len(hasCoTmp)>0)
-                # with another spider:
-                #  crawl https://scholar.google.de/citations?view_op=list_colleagues&hl=de&user=F4P3ghEAAAAJ
-                # for the users having hasCo true.
+            orgMatch = re.search('org=(\d+)"', response.xpath('//div[@class="gsc_prf_il"]').extract_first())
+            org = orgMatch.group(1) if orgMatch else None
 
-                orgtmp = response.xpath('//div[@class="gsc_prf_il"]').extract_first()
-                orgtmp2 = re.search('org=(\d+)"', orgtmp)
-                org = orgtmp2.group(1) if orgtmp2 else None
-                #build detailed author item
-                item = ItemLoader(item=AuthorDetItem(), response=response)
-                item.add_value('measures', measures)
-                item.add_value('org', org)
-                item.add_value('hasCo', hasCo )
-                yield item.load_item()
+            # build detailed author item
+            item = ItemLoader(item=authorItem, response=response)
+            # name required
+            item.add_xpath('name', '//*[@id="gsc_prf_in"]/text()')
+            item.add_xpath('measures', '//td[@class="gsc_rsb_std"]/text()')
+            item.add_value('org', org)
+            item.add_value('hasCo', hasCo)
+            yield item.load_item()
 
 
         # crawl the author's documents
@@ -63,8 +65,6 @@ class AuthorDetails(scrapy.Spider):
         # docid is the part in the following
         # /citations?view_op=view_citation&;hl=de&user=F4P3ghEAAAAJ&pagesize=100&citation_for_view=F4P3ghEAAAAJ:u5HHmVD_uO8C
         # to-do: id unique? same id, when document requested from another author's profile?
-
-        authorID = re.search('&user=([^&]+)',response.url).group(1)
 
         # Prepare document item with authors id for reuse
         doc_item = DocItem()
