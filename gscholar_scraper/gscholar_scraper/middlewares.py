@@ -82,7 +82,7 @@ class ProxiedTorConnectionMiddleware(object):
             request.headers['User-Agent'] = ua.random
             req = request.replace(dont_filter=True, priority=-50)
             spider.logger.debug('Rescheduling request %s' % req)
-            # return req
+            return req
         return response
 
     def process_exception(self, request, exception, spider):

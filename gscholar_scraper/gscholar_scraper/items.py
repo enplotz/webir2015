@@ -26,9 +26,13 @@ def fix_string(input):
 
 
 class FOSItem(GScholarItem):
-    """ One field-of-study item.
-    """
-    field_name = scrapy.Field(input_processor=fix_string)
+    """One field-of-study item."""
+
+    class Model(DeclarativeBase):
+        __tablename__ = 'labels'
+        field_name = Column(String, primary_key=True)
+
+    field_name = scrapy.Field(input_processor=fix_string, output_processor=TakeFirst())
 
 class AuthorGenItem(GScholarItem):
     # general author info, when searched with label:biology e.g.
@@ -41,8 +45,6 @@ class AuthorGenItem(GScholarItem):
         fos = Column('fields_of_study', postgresql.ARRAY(String), nullable=True)
         name = Column(String)
         cited = Column(Integer, nullable=True)
-
-    model_class = Model
 
     id = scrapy.Field(output_processor=TakeFirst())
     fos = scrapy.Field()
@@ -68,8 +70,6 @@ class DocItem(GScholarItem):
         id = Column(String, primary_key=True)
         cite_count = Column(Integer, nullable=True)
         year = Column(Integer)
-
-    model_class = Model
 
     author_id = scrapy.Field(
         output_processor = TakeFirst()

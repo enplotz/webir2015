@@ -38,8 +38,8 @@ class DatabaseSavingPipeline(object):
         """
         session = self.Session()
         db_item = None
-        if hasattr(item, 'model_class'):
-            db_item = item.model_class(**item)
+        if hasattr(item, 'Model'):
+            db_item = item.Model(**item)
 
         try:
             session.merge(db_item)

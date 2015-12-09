@@ -54,15 +54,15 @@ DOWNLOADER_MIDDLEWARES = {
     'scrapy_fake_useragent.middleware.RandomUserAgentMiddleware': 400,
     'gscholar_scraper.middlewares.ProxyMiddleware': 410,
     # TODO fix own middleware that renews tor identity
-    # 'gscholar_scraper.middlewares.ProxiedTorConnectionMiddleware' : 500,
+    'gscholar_scraper.middlewares.ProxiedTorConnectionMiddleware' : 500,
     'gscholar_scraper.middlewares.LoggerMiddleware' : 900,
 }
 
 # DEPTH_LIMIT = 10
 
-FEED_EXPORTERS = {
-    'sqlite' : 'gscholar_scraper.exporters.database.SQLiteItemExporter'
-}
+# FEED_EXPORTERS = {
+    # 'sqlite' : 'gscholar_scraper.exporters.database.SQLiteItemExporter'
+# }
 
 # Configure maximum concurrent requests performed by Scrapy (default: 16)
 #CONCURRENT_REQUESTS=32
