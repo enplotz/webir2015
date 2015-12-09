@@ -11,7 +11,6 @@ from scrapy.loader.processors import TakeFirst, MapCompose, Join, Compose
 from models import DeclarativeBase
 from sqlalchemy import create_engine, Column, Integer, String, Boolean
 from sqlalchemy.dialects import postgresql
-from sqlalchemy.ext.declarative import declarative_base, declared_attr
 
 
 class GScholarItem(scrapy.Item):

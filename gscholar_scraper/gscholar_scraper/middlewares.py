@@ -43,6 +43,7 @@ def renew_connection(logger):
 
 class ProxiedTorConnectionMiddleware(object):
     def process_response(self, request, response, spider):
+        spider.logger.debug('Got code %d.' % response.status)
         if response.status != 200 and response.headers['Location']:
             # we probably got redirected to the captcha page
             spider.logger.info('Response status: {0} using proxy {1} retrying request to {2}'

@@ -1,31 +1,72 @@
 import scrapy
 import re
-import random
-from gscholar_scraper.items import AuthorItem
+from gscholar_scraper.items import FOSItem, AuthorItem
 from scrapy.http import Request
-from scrapy import signals
 from scrapy.loader import ItemLoader
-from scrapy.xlib.pydispatch import dispatcher
 import gscholar_scraper.utils as utils
+from models import db_connect, windowed_query, column_windows
+from sqlalchemy.orm import sessionmaker
+import random
+import urllib2
+
+
+def all_fields():
+    engine = db_connect()
+    session = sessionmaker(bind=engine)()
+
+    try:
+        for window in windowed_query(session.query(FOSItem.Model), FOSItem.Model.field_name, 1000):
+            yield window
+    finally:
+        session.close()
 
 class AuthorLabels(scrapy.Spider):
     name = "author_general"
     handle_httpstatus_list = [200, 302, 400, 402, 503]
 
+    # use &hl=de parameter for appropiate citecount pattern
+    pattern = 'https://scholar.google.de/citations?view_op=search_authors&hl=de&mauthors=label:{0}'
+
     def __init__(self, *args, **kwargs):
         super(self.__class__, self).__init__(*args, **kwargs)
-        dispatcher.connect(self.spider_closed, signals.spider_closed)
 
-        # use &hl=de parameter for appropiate citecount pattern
-        self.container = ['https://scholar.google.de/citations?view_op=search_authors&hl=de&mauthors=label:biology']
-        # select a random url to start at
-        start = utils.pop_random(self.container)
-        if start:
-            self.start_urls = [start]
+        # fields from the database
+        self.fields = all_fields()
+        # appended urls from pagination
+        self.container = []
 
-    def spider_closed(self, spider):
-        f2 = open('stops_general.txt','wb')
-        f2.write("\n".join(self.container))
+        # select a field to start at
+        if self.fields:
+            start_label = self.fields.next().field_name
+            print 'starting with label %s ' % start_label
+            enc = urllib2.quote(start_label.encode('utf-8')).encode('ASCII')
+            self.start_urls = [self.pattern.format(enc)]
+
+    def next_label_from_db(self):
+        next_label = next(self.fields, None)
+        if not next_label:
+            return None
+        enc = urllib2.quote(next_label.field_name.encode('utf-8')).encode('ASCII')
+        self.logger.debug('Choosing existing label %s.' % enc)
+        return self.pattern.format(enc)
+
+    def choose_next(self):
+        if random.random() > 0.5:
+            if len(self.container) == 0:
+                l = self.next_label_from_db()
+                return l
+            else:
+                u = utils.pop_random(self.container)
+                self.logger.debug('Choosing existing url %s.' % u)
+                return u
+        else:
+            next_url = self.next_label_from_db()
+            if next_url:
+                return next_url
+
+            next_url = utils.pop_random(self.container)
+            self.logger.debug('Choosing existing url %s.' % next_url)
+            return next_url
 
     def parse(self, response):
         # determine current search label
@@ -62,9 +103,11 @@ class AuthorLabels(scrapy.Spider):
                 newUrl = str(new2.group(1)).replace('\\x3d','=').replace('\\x26', '&')
                 newUrl = 'https://scholar.google.de/citations?view_op=search_authors&hl=de&mauthors' + newUrl
                 self.container.append(newUrl)
-        # proceed with another random url to randomize access pattern to gscholar
-        next = utils.pop_random(self.container)
-        if next:
-            yield Request(url=next)
+
+        # proceed with another random url or label to randomize access pattern to gscholar
+        next_url = self.choose_next()
+
+        if next_url:
+            yield Request(url=next_url)
 
 
