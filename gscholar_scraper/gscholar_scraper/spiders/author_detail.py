@@ -6,26 +6,66 @@ from scrapy import signals
 from scrapy.loader import ItemLoader
 from scrapy.xlib.pydispatch import dispatcher
 import gscholar_scraper.utils as utils
+import urllib2
+from models import db_connect, windowed_query, column_windows
+from sqlalchemy.orm import sessionmaker, Query
+from sqlalchemy import or_
+import random
+
+def missing_authors():
+    engine = db_connect()
+    session = sessionmaker(bind=engine)()
+
+    try:
+        q = session.query(AuthorItem.Model).filter(or_(AuthorItem.Model.measures == None, AuthorItem.Model.org == None, AuthorItem.Model.hasCo == None))
+        for window in windowed_query(q, AuthorItem.Model.id, 1000):
+            yield window
+    finally:
+        session.close()
 
 class AuthorDetails(scrapy.Spider):
     name = "author_detail"
     handle_httpstatus_list = [200, 302, 400, 402, 503]
 
+    pattern = 'https://scholar.google.de/citations?hl=de&user={0}&cstart=0&pagesize=100'
+
     def __init__(self, *args, **kwargs):
         super(self.__class__, self).__init__(*args, **kwargs)
-        dispatcher.connect(self.spider_closed, signals.spider_closed)
 
+        self.missing_authors = missing_authors()
         # author profiles with cstart and pagesize parameters
-        self.container = ['https://scholar.google.de/citations?hl=de&user=TaJMF0EAAAAJ&cstart=0&pagesize=100']
+        self.container = []
         # select a random url to start at
-        start = utils.pop_random(self.container)
-        if start:
-            self.start_urls = [start]
-            # pass
 
-    def spider_closed(self, spider):
-        f2 = open('stops_detailed.txt','wb')
-        f2.write("\n".join(self.container))
+        if self.missing_authors:
+            start_author = self.missing_authors.next()
+            print 'starting with author %s' % start_author.name
+            self.start_urls = [self.pattern.format(start_author.id)]
+
+    def next_author_from_db(self):
+        next_author = next(self.missing_authors, None)
+        if not next_author:
+            return None
+        self.logger.debug('Choosing existing label %s.' % next_author.name)
+        return self.pattern.format(next_author.id)
+
+    def choose_next(self):
+        if random.random() > 0.5:
+            if len(self.container) == 0:
+                l = self.next_author_from_db()
+                return l
+            else:
+                u = utils.pop_random(self.container)
+                self.logger.debug('Choosing existing url %s.' % u)
+                return u
+        else:
+            next_author = self.next_author_from_db()
+            if next_author:
+                return next_author
+
+            next_author = utils.pop_random(self.container)
+            self.logger.debug('Choosing existing url %s.' % next_author)
+            return next_author
 
     def parse(self, response):
 
@@ -95,8 +135,9 @@ class AuthorDetails(scrapy.Spider):
             self.container.append(newUrl)
 
         # proceed with another random url to randomize access pattern to gscholar
-        next = utils.pop_random(self.container)
-        if next:
-            yield Request(url=next,dont_filter=True)
+        next_url = self.choose_next()
+
+        if next_url:
+            yield Request(url=next_url)#, dont_filter=True)
 
 
