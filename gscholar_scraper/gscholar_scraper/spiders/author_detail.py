@@ -24,7 +24,6 @@ class AuthorDetails(scrapy.Spider):
         if start:
             self.start_urls = [start]
             # pass
-        # self.start_urls = [ 'http://ozuma.sakura.ne.jp/httpstatus/302' ]
 
     def spider_closed(self, spider):
         f2 = open('stops_detailed.txt','wb')
@@ -50,12 +49,12 @@ class AuthorDetails(scrapy.Spider):
 
                 orgtmp = response.xpath('//div[@class="gsc_prf_il"]').extract_first()
                 orgtmp2 = re.search('org=(\d+)"', orgtmp)
-                org = orgtmp2.group(1) if orgtmp2 else -1
+                org = orgtmp2.group(1) if orgtmp2 else None
                 #build detailed author item
                 item = ItemLoader(item=AuthorDetItem(), response=response)
-                item._add_value('measures', measures)
-                item._add_value('org', org)
-                item._add_value('hasCo', hasCo )
+                item.add_value('measures', measures)
+                item.add_value('org', org)
+                item.add_value('hasCo', hasCo )
                 yield item.load_item()
 
 
@@ -65,17 +64,20 @@ class AuthorDetails(scrapy.Spider):
         # /citations?view_op=view_citation&;hl=de&user=F4P3ghEAAAAJ&pagesize=100&citation_for_view=F4P3ghEAAAAJ:u5HHmVD_uO8C
         # to-do: id unique? same id, when document requested from another author's profile?
 
-        authorIDtmp = re.search('&user=([^&]+)',response.url)
-        authorID = authorIDtmp.group(1)
-        titles = response.xpath('//a[@class="gsc_a_at"]/text()').extract()
-        docIDs = [i.split(':')[-1] for i in response.xpath('//a[@class="gsc_a_at"]/@href').extract()]
-        citecounts = response.xpath('//a[@class="gsc_a_ac"]/text()').extract()
-        years = response.xpath('//span[@class="gsc_a_h"]/text()').extract()
+        authorID = re.search('&user=([^&]+)',response.url).group(1)
 
-        item = ItemLoader(item=DocItem(), response=response)
-        item._add_value('authorid', authorID)
-        item._add_value('docs',zip(titles, docIDs, citecounts,years))#maybe subdivide tuple & add more item properties?
-        yield item.load_item()
+        # Prepare document item with authors id for reuse
+        doc_item = DocItem()
+        doc_item['author_id'] = authorID
+
+        # Publication items for the author
+        for doc in response.xpath('//*[@class="gsc_a_tr"]'):
+            il = ItemLoader(item=doc_item, selector=doc, response=response)
+            il.add_xpath('title', './td[@class="gsc_a_t"]/a/text()')
+            il.add_xpath('id', './td[@class="gsc_a_t"]/a/@href')
+            il.add_xpath('cite_count', './td[@class="gsc_a_c"]/a/text()')
+            il.add_xpath('year', './td[@class="gsc_a_y"]//text()')
+            yield il.load_item()
 
         # btn for next documents:
         btnEnabled = response.xpath('//button[@id="gsc_bpf_next" and not(contains(@class ,"gs_dis"))]').extract_first()

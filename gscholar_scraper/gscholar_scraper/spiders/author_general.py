@@ -49,13 +49,13 @@ class AuthorLabels(scrapy.Spider):
             citecount = re.search('<div class="gsc_1usr_cby">Zitiert von: ([0-9]+)</div>', user)
             if id and name:
                 item = ItemLoader(item=AuthorGenItem(), response=response)
-                item._add_value('fos', currFOS)
-                item._add_value('id', id.group(1))
-                item._add_value('name', name.group(1))
+                item.add_value('fos', currFOS)
+                item.add_value('id', id.group(1))
+                item.add_value('name', name.group(1))
 
                 # unknown citation count:
-                cited = citecount.group(1) if citecount else -1
-                item._add_value('cited',cited )
+                cited = citecount.group(1) if citecount else None
+                item.add_value('cited', cited)
                 yield item.load_item()
 
         # generate  next url

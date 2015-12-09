@@ -2,6 +2,7 @@
 
 from os.path import join, dirname
 from dotenv import load_dotenv
+from os import environ
 
 dotenv_path = join(dirname(__file__), '.env')
 load_dotenv(dotenv_path)
@@ -98,6 +99,7 @@ ITEM_PIPELINES = {
     # we want to set our default values as early as possible
     'gscholar_scraper.pipelines.DefaultValuesForItem' : 0,
     'gscholar_scraper.pipelines.GscholarScraperPipeline': 300,
+    'gscholar_scraper.pipelines.DatabaseSavingPipeline' : 900,
 }
 
 # Enable and configure the AutoThrottle extension (disabled by default)
@@ -118,3 +120,13 @@ ITEM_PIPELINES = {
 #HTTPCACHE_DIR='httpcache'
 #HTTPCACHE_IGNORE_HTTP_CODES=[]
 #HTTPCACHE_STORAGE='scrapy.extensions.httpcache.FilesystemCacheStorage'
+
+# Use configuration from .env file :)
+DATABASE = {
+    'drivername' : 'postgres',
+    'host' : environ["DB_HOST"],
+    'port' : environ["DB_PORT"],
+    'username' : environ["DB_USERNAME"],
+    'password' : environ["DB_PASSWORD"],
+    'database' : environ["DB_DATABASE"],
+}
