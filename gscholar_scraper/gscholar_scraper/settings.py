@@ -21,6 +21,8 @@ BOT_NAME = 'gscholar_scraper'
 SPIDER_MODULES = ['gscholar_scraper.spiders']
 NEWSPIDER_MODULE = 'gscholar_scraper.spiders'
 
+SEED_NAME_LIST = 'names.txt'
+
 LOG_LEVEL = 'DEBUG'
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
 # USER_AGENT = 'gscholar_scraper (+http://www.isg.uni-konstanz.de/teaching/webir/)'

@@ -1,40 +1,36 @@
 import scrapy
 import re
-import random
 from gscholar_scraper.items import FOSItem
 from scrapy.http import Request
-from scrapy import signals
 from scrapy.loader import ItemLoader
-from scrapy.xlib.pydispatch import dispatcher
 import gscholar_scraper.utils as utils
+from scrapy.utils.project import get_project_settings
+
+import urllib
 
 class AuthorLabels(scrapy.Spider):
     name = "author_labels"
     handle_httpstatus_list = [200, 302, 400, 402, 503]
 
+    base_url = 'https://scholar.google.de/citations?view_op=search_authors&mauthors'
+
     def __init__(self, *args, **kwargs):
         super(self.__class__, self).__init__(*args, **kwargs)
-        dispatcher.connect(self.spider_closed, signals.spider_closed)
-        with open('stops.txt', mode='r') as f:
-            self.container = [i for i in f.readlines() if len(i) > 4]
-        # select a random url to start at
+        settings = get_project_settings()
+        with open(settings['SEED_NAME_LIST'], mode='r') as f:
+            self.container = [(self.base_url + '={0}').format(urllib.quote(i)) for i in f.readlines() if len(i) > 0]
+
+        self.logger.info('Starting with %d surnames.', len(self.container))
+
         start = utils.pop_random(self.container)
         if start:
             self.start_urls = [start]
-            # pass
-        # self.start_urls = [ 'http://ozuma.sakura.ne.jp/httpstatus/302' ]
 
-    def spider_closed(self, spider):
-        f2 = open('stops.txt','wb')
-        f2.write("\n".join(self.container))
 
     def parse(self, response):
         # for each author ID on the page,create a new authorItem
         for ids in response.xpath('//*[@id="gsc_ccl"]/div/div/div[@class="gsc_1usr_int"]'):
             full = ids.extract()
-            #print tmp
-            #full = ids.xpath('a/@href').extract_first()# to-do: simplify to one regex
-            #id = re.search('user=(.*)&', tmp).group(1)
             fos = re.findall('=label:([^"]+)"', full)
             if fos:
                 for f in fos:
@@ -49,7 +45,7 @@ class AuthorLabels(scrapy.Spider):
             new2 = re.search('mauthors(.*)\'"', new1)
             if new2:
                 newUrl = str(new2.group(1)).replace('\\x3d','=').replace('\\x26', '&')
-                newUrl = 'https://scholar.google.de/citations?view_op=search_authors&hl=de&mauthors' + newUrl
+                newUrl = self.base_url + newUrl
                 self.container.append(newUrl)
         # proceed with another random url to randomize access pattern to gscholar
         next = utils.pop_random(self.container)
