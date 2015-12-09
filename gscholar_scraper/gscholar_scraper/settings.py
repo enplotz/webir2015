@@ -1,5 +1,12 @@
 # -*- coding: utf-8 -*-
 
+from os.path import join, dirname
+from dotenv import load_dotenv
+from os import environ
+
+dotenv_path = join(dirname(__file__), '.env')
+load_dotenv(dotenv_path)
+
 # Scrapy settings for gscholar_scraper project
 #
 # For simplicity, this file contains only settings considered important or
@@ -14,15 +21,44 @@ BOT_NAME = 'gscholar_scraper'
 SPIDER_MODULES = ['gscholar_scraper.spiders']
 NEWSPIDER_MODULE = 'gscholar_scraper.spiders'
 
-LOG_LEVEL = 'INFO'
+LOG_LEVEL = 'DEBUG'
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
 # USER_AGENT = 'gscholar_scraper (+http://www.isg.uni-konstanz.de/teaching/webir/)'
 
-USER_AGENT = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_1) AppleWebKit/601.2.7 (KHTML, like Gecko) Version/9.0.1 Safari/601.2.7'
-
 CONCURRENT_REQUESTS = 1
-DOWNLOAD_DELAY = 4
-RANDOMIZE_DOWNLOAD_DELAY = True
+#DOWNLOAD_DELAY = 4
+#RANDOMIZE_DOWNLOAD_DELAY = True
+
+# We do not want redirects to the captcha site followed
+REDIRECT_ENABLED = False
+
+# RETRY_HTTP_CODES = [302, 400, 403]
+
+# Our http proxy. You can use Polipo or privoxy.
+# Use the urlparse.urlparse method to access the netloc (get rid of 'http').
+HTTP_PROXY = 'http://127.0.0.1:8123'
+
+
+# Enable or disable spider middlewares
+# See http://scrapy.readthedocs.org/en/latest/topics/spider-middleware.html
+SPIDER_MIDDLEWARES = {
+   # 'gscholar_scraper.middlewares.RenewTorConnectionMiddleware': 0,
+}
+
+# Enable or disable downloader middlewares
+# See http://scrapy.readthedocs.org/en/latest/topics/downloader-middleware.html
+DOWNLOADER_MIDDLEWARES = {
+    'scrapy.downloadermiddlewares.useragent.UserAgentMiddleware': None,
+    'scrapy.downloadermiddleware.retry.RetryMiddleware': None,
+
+    'scrapy_fake_useragent.middleware.RandomUserAgentMiddleware': 400,
+    'gscholar_scraper.middlewares.ProxyMiddleware': 410,
+    # TODO fix own middleware that renews tor identity
+    # 'gscholar_scraper.middlewares.ProxiedTorConnectionMiddleware' : 500,
+    'gscholar_scraper.middlewares.LoggerMiddleware' : 900,
+}
+
+# DEPTH_LIMIT = 10
 
 FEED_EXPORTERS = {
     'sqlite' : 'gscholar_scraper.exporters.database.SQLiteItemExporter'
@@ -51,18 +87,6 @@ DEFAULT_REQUEST_HEADERS = {
   'Accept-Language': 'en',
 }
 
-# Enable or disable spider middlewares
-# See http://scrapy.readthedocs.org/en/latest/topics/spider-middleware.html
-#SPIDER_MIDDLEWARES = {
-#    'gscholar_scraper.middlewares.MyCustomSpiderMiddleware': 543,
-#}
-
-# Enable or disable downloader middlewares
-# See http://scrapy.readthedocs.org/en/latest/topics/downloader-middleware.html
-#DOWNLOADER_MIDDLEWARES = {
-#    'gscholar_scraper.middlewares.MyCustomDownloaderMiddleware': 543,
-#}
-
 # Enable or disable extensions
 # See http://scrapy.readthedocs.org/en/latest/topics/extensions.html
 #EXTENSIONS = {
@@ -72,7 +96,10 @@ DEFAULT_REQUEST_HEADERS = {
 # Configure item pipelines
 # See http://scrapy.readthedocs.org/en/latest/topics/item-pipeline.html
 ITEM_PIPELINES = {
-   'gscholar_scraper.pipelines.GscholarScraperPipeline': 300,
+    # we want to set our default values as early as possible
+    'gscholar_scraper.pipelines.DefaultValuesForItem' : 0,
+    'gscholar_scraper.pipelines.GscholarScraperPipeline': 300,
+    'gscholar_scraper.pipelines.DatabaseSavingPipeline' : 900,
 }
 
 # Enable and configure the AutoThrottle extension (disabled by default)
@@ -93,3 +120,13 @@ ITEM_PIPELINES = {
 #HTTPCACHE_DIR='httpcache'
 #HTTPCACHE_IGNORE_HTTP_CODES=[]
 #HTTPCACHE_STORAGE='scrapy.extensions.httpcache.FilesystemCacheStorage'
+
+# Use configuration from .env file :)
+DATABASE = {
+    'drivername' : 'postgres',
+    'host' : environ["DB_HOST"],
+    'port' : environ["DB_PORT"],
+    'username' : environ["DB_USERNAME"],
+    'password' : environ["DB_PASSWORD"],
+    'database' : environ["DB_DATABASE"],
+}

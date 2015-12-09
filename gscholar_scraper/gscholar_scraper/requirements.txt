@@ -1,2 +1,0 @@
-# Scrapy framework
-scrapy==1.0

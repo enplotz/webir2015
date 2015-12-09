@@ -33,6 +33,7 @@ class CategoriesSpider(Spider):
 
         item = ItemLoader(item=CategoryItem(), response=response)
         title = response.xpath(title_xp).extract_first()
+
         item.add_value('name', title)
         subs = []
         for sub in response.xpath('//*[@id="gs_m_rbs"]/ul/li/a'):
@@ -44,7 +45,6 @@ class CategoriesSpider(Spider):
             req.meta['parent'] = title
             yield req
         item.add_value('subs', subs)
-        item.add_value('updated_at', ctime())
         yield item.load_item()
 
 
@@ -66,6 +66,5 @@ class CategoriesSpider(Spider):
 
             # TODO h-index url: follow or save to item
         sub_cat['publications'] = publications
-        sub_cat['updated_at'] = ctime()
         sub_cat['parent'] = response.meta.get('parent', None)
         return sub_cat
