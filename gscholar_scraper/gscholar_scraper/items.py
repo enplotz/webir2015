@@ -35,6 +35,17 @@ class FOSItem(GScholarItem):
     field_name = scrapy.Field(input_processor=fix_string, output_processor=TakeFirst())
 
 
+class CoAuthorItem(GScholarItem):
+
+    class Model(DeclarativeBase):
+        __tablename__ = 'coauthor'
+        author1 = Column(String, primary_key=True)
+        author2 = Column(String, primary_key=True)
+
+    author1 = scrapy.Field(output_processor=TakeFirst())
+    author2 = scrapy.Field(output_processor=TakeFirst())
+
+
 class AuthorItem(GScholarItem):
 
 

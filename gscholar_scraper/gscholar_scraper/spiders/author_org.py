@@ -15,17 +15,15 @@ def all_fields():
     session = sessionmaker(bind=engine)()
 
     try:
-        for window in windowed_query(session.query(FOSItem.Model), FOSItem.Model.field_name, 1000):
+        for window in windowed_query(session.query(AuthorItem.Model).filter(AuthorItem.Model.org != None), AuthorItem.Model.org, 1000):
             yield window
     finally:
         session.close()
 
-class AuthorLabels(scrapy.Spider):
-    name = "author_general"
+class AuthorOrg(scrapy.Spider):
+    name = "author_org"
     handle_httpstatus_list = [200, 302, 400, 402, 503]
-
-    # use &hl=de parameter for appropiate citecount pattern
-    pattern = 'https://scholar.google.de/citations?view_op=search_authors&hl=de&mauthors=label:{0}'
+    pattern = 'https://scholar.google.de/citations?view_op=view_org&hl=de&org={0}'
 
     def __init__(self, *args, **kwargs):
         super(self.__class__, self).__init__(*args, **kwargs)
@@ -37,17 +35,17 @@ class AuthorLabels(scrapy.Spider):
 
         # select a field to start at
         if self.fields:
-            start_label = self.fields.next().field_name
-            print 'starting with label %s ' % start_label
-            enc = urllib2.quote(start_label.encode('utf-8')).encode('ASCII')
+            start_org = self.fields.next().org
+            print 'starting with org %s ' % start_org
+            enc = urllib2.quote(start_org.encode('utf-8')).encode('ASCII')
             self.start_urls = [self.pattern.format(enc)]
 
     def next_label_from_db(self):
         next_label = next(self.fields, None)
         if not next_label:
             return None
-        enc = urllib2.quote(next_label.field_name.encode('utf-8')).encode('ASCII')
-        self.logger.debug('Choosing existing label %s.' % enc)
+        enc = urllib2.quote(next_label.org.encode('utf-8')).encode('ASCII')
+        self.logger.debug('Choosing existing org %s.' % enc)
         return self.pattern.format(enc)
 
     def choose_next(self):
@@ -69,9 +67,12 @@ class AuthorLabels(scrapy.Spider):
             return next_url
 
     def parse(self, response):
+
+
         # get 10 author divs
         for divs in response.xpath('//div[@class="gsc_1usr gs_scl"]')[0:9]:
             user = divs.extract()
+
             # Content in the img's alt tag is the actual name, shown on the profile
             # However, the name in the actual link differs sometimes slightly
             # EH Roberts (link) instead of E H Roberts (on profile + alt)
@@ -95,16 +96,16 @@ class AuthorLabels(scrapy.Spider):
         # generate  next url
         new1 = response.xpath('//*[@id="gsc_authors_bottom_pag"]/span/button[2]').extract_first()
         if new1:
-            new2 = re.search('mauthors(.*)\'"', new1)
+            new2 = re.search('org(.*)\'"', new1)
             if new2:
                 newUrl = str(new2.group(1)).replace('\\x3d','=').replace('\\x26', '&')
-                newUrl = 'https://scholar.google.de/citations?view_op=search_authors&hl=de&mauthors' + newUrl
+                newUrl = 'https://scholar.google.de/citations?view_op=view_org&hl=de&org' + newUrl
                 self.container.append(newUrl)
 
         # proceed with another random url or label to randomize access pattern to gscholar
         next_url = self.choose_next()
 
         if next_url:
-            yield Request(url=next_url)
+            yield Request(url=next_url,dont_filter=True)
 
 
