@@ -15,17 +15,32 @@ intact. #}
 {% block content %}
 <div class="container-fluid">
     <h2>Search</h2>
-    <div class="row" id="search">
 
-        <p>Search for {{ entity_name }}!</p>
-
-        <form role="form" method='POST' action='{{ action }}'>
-            <div class="form-group">
-                <input type="text" name="entity_value" class="form-control" id="url-box"
-                       placeholder="Enter {{ entity_name }}..." style="max-width: 300px;">
+    <div class="row">
+        <div class="col-sm-12">
+            {% if errors %}
+            {% for error in errors %}
+            <div class="alert alert-danger" role="alert">
+                <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
+                <span class="sr-only">Error:</span>
+                {{error}}
             </div>
-            <button type="submit" class="btn btn-default">Submit</button>
-        </form>
+            {% endfor %}
+            {% endif %}
+        </div>
+    </div>
+    <div class="row" id="search">
+        <div class="col-sm-12">
+            <p>Search for {{ entity_name }}!</p>
+
+            <form role="form" method='POST' action='{{ action }}'>
+                <div class="form-group">
+                    <input type="text" name="entity_value" class="form-control" id="url-box"
+                           placeholder="Enter {{ entity_name }}..." style="max-width: 300px;">
+                </div>
+                <button type="submit" class="btn btn-default">Submit</button>
+            </form>
+        </div>
     </div>
 </div>
 {%- endblock %}

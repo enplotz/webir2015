@@ -36,7 +36,7 @@ engine = create_engine(app.config['SQL_ALCHEMY_DATABASE_URI'])
 Base.prepare(engine, reflect=True)
 Author = Base.classes.authors
 Document = Base.classes.documents
-Labels = Base.classes.labels
+Label = Base.classes.labels
 
 toolbar = DebugToolbarExtension(app)
 
@@ -48,12 +48,39 @@ def index():
 
     return render_template('index.html')
 
-@app.route('/researcher', methods=['POST', 'GET'])
-def find_researcher():
+
+def field_term(search_term):
+    return '_'.join(search_term.lower().split(' '))
+
+@app.route('/search', methods=['GET', 'POST'])
+def search():
+    errors = []
     if request.method == 'POST':
-        researcher = request.form['entity_value']
-        return redirect(url_for('show_researcher_profile', id=researcher))
-    return show_search_form('Researcher', '/researcher')
+        search_term = request.form['entity_value']
+        print(search_term)
+        fos_search_term = field_term(search_term)
+        try:
+            session = Session(engine)
+            res = None
+            fields = None
+            try:
+                res = session.query(Author).filter(Author.name.like('%' + search_term + '%')).all()
+                fields = session.query(Label).filter(Label.field_name.like('%' + fos_search_term + '%')).all()
+            finally:
+                session.close()
+            return render_template('search_result.html', researchers=res, search_term = search_term, fos_search_term = fos_search_term, fields=fields)
+        except Exception as e:
+            errors.append(e)
+
+    return render_template('search_entity.html', entity_name='Researcher or Field', action='/search', errors=errors)
+
+@app.route('/researcher', methods=['GET'])
+def find_researcher():
+    return redirect(url_for('search'), 302)
+    # if request.method == 'POST':
+    #     researcher = request.form['entity_value']
+    #     return redirect(url_for('show_researcher_profile', id=researcher))
+    # return show_search_form('Researcher', '/researcher')
 
 @app.route('/researcher/<id>')
 def show_researcher_profile(id):
@@ -82,10 +109,11 @@ def show_search_form(entity_name, action):
 
 @app.route('/fos', methods=['POST', 'GET'])
 def find_field():
-    if request.method == 'POST':
-        fos = request.form['entity_value']
-        return redirect(url_for('show_field', field_name=fos))
-    return show_search_form('Field Of Study', '/fos')
+    # if request.method == 'POST':
+    #     fos = field_term(request.form['entity_value'])
+    #     return redirect(url_for('show_field', field_name=fos))
+    # return show_search_form('Field Of Study', '/fos')
+    return redirect(url_for('search'), 302)
 
 @app.route('/fos/<field_name>')
 def show_field(field_name):
@@ -107,4 +135,4 @@ def show_field(field_name):
 
 if __name__ == '__main__':
     print(environ['APP_SETTINGS'])
-    app.run()
+    app.run(host='0.0.0.0', port=5000)
