@@ -34,126 +34,35 @@ intact. #}
 
         <div class="col-sm-10 col-sm-offset-2 col-md-11 col-md-offset-1 main">
 
-            <!--<div class="row placeholders">-->
-            <!--<div class="col-xs-6 col-sm-3 placeholder">-->
-            <!--<img src="data:image/gif;base64,R0lGODlhAQABAIAAAHd3dwAAACH5BAAAAAAALAAAAAABAAEAAAICRAEAOw=="-->
-            <!--width="200" height="200" class="img-responsive" alt="Generic placeholder thumbnail">-->
-            <!--<h4>Label</h4>-->
-            <!--<span class="text-muted">Something else</span>-->
-            <!--</div>-->
-            <!--<div class="col-xs-6 col-sm-3 placeholder">-->
-            <!--<img src="data:image/gif;base64,R0lGODlhAQABAIAAAHd3dwAAACH5BAAAAAAALAAAAAABAAEAAAICRAEAOw=="-->
-            <!--width="200" height="200" class="img-responsive" alt="Generic placeholder thumbnail">-->
-            <!--<h4>Label</h4>-->
-            <!--<span class="text-muted">Something else</span>-->
-            <!--</div>-->
-            <!--<div class="col-xs-6 col-sm-3 placeholder">-->
-            <!--<img src="data:image/gif;base64,R0lGODlhAQABAIAAAHd3dwAAACH5BAAAAAAALAAAAAABAAEAAAICRAEAOw=="-->
-            <!--width="200" height="200" class="img-responsive" alt="Generic placeholder thumbnail">-->
-            <!--<h4>Label</h4>-->
-            <!--<span class="text-muted">Something else</span>-->
-            <!--</div>-->
-            <!--<div class="col-xs-6 col-sm-3 placeholder">-->
-            <!--<img src="data:image/gif;base64,R0lGODlhAQABAIAAAHd3dwAAACH5BAAAAAAALAAAAAABAAEAAAICRAEAOw=="-->
-            <!--width="200" height="200" class="img-responsive" alt="Generic placeholder thumbnail">-->
-            <!--<h4>Label</h4>-->
-            <!--<span class="text-muted">Something else</span>-->
-            <!--</div>-->
-            <!--</div>-->
-
-            <div class="row" id="search">
-                <h2>Search</h2>
-                <p>Search for a field of researcher!</p>
-                search
+            <div class="row placeholders">
+            <div class="col-xs-6 col-sm-3 placeholder">
+            <img src="data:image/gif;base64,R0lGODlhAQABAIAAAHd3dwAAACH5BAAAAAAALAAAAAABAAEAAAICRAEAOw=="
+            width="200" height="200" class="img-responsive" alt="Generic placeholder thumbnail">
+            <h4>Label</h4>
+            <span class="text-muted">Something else</span>
+            </div>
+            <div class="col-xs-6 col-sm-3 placeholder">
+            <img src="data:image/gif;base64,R0lGODlhAQABAIAAAHd3dwAAACH5BAAAAAAALAAAAAABAAEAAAICRAEAOw=="
+            width="200" height="200" class="img-responsive" alt="Generic placeholder thumbnail">
+            <h4>Label</h4>
+            <span class="text-muted">Something else</span>
+            </div>
+            <div class="col-xs-6 col-sm-3 placeholder">
+            <img src="data:image/gif;base64,R0lGODlhAQABAIAAAHd3dwAAACH5BAAAAAAALAAAAAABAAEAAAICRAEAOw=="
+            width="200" height="200" class="img-responsive" alt="Generic placeholder thumbnail">
+            <h4>Label</h4>
+            <span class="text-muted">Something else</span>
+            </div>
+            <div class="col-xs-6 col-sm-3 placeholder">
+            <img src="data:image/gif;base64,R0lGODlhAQABAIAAAHd3dwAAACH5BAAAAAAALAAAAAABAAEAAAICRAEAOw=="
+            width="200" height="200" class="img-responsive" alt="Generic placeholder thumbnail">
+            <h4>Label</h4>
+            <span class="text-muted">Something else</span>
+            </div>
             </div>
 
-            <div class="row" id="compare">
-                <h2>Comparing for Field
-                    <small>biology</small>
-                </h2>
-
-                <div class="col-sm-6 col-md-4">
-                    <div class="thumbnail">
-                        <img src="https://scholar.google.de/citations?view_op=view_photo&user=No2ot2YAAAAJ&citpid=2"
-                             alt="..." width="150px" height="150px">
-
-                        <div class="caption">
-                            <h3>Max Mustermann</h3>
-                            <ul>
-                                <li>Chemistry</li>
-                                <li>Biology</li>
-                            </ul>
-
-                        </div>
-                    </div>
-                </div>
-                <div class="col-sm-6 col-md-4">
-                    <div class="thumbnail">
-                        <img src="http://placekitten.com/150/114" alt="...">
-
-                        <div class="caption">
-                            <h3>Average User in Field</h3>
-
-                            <ul>
-                                <li>Chemistry</li>
-                                <li>Biology</li>
-                            </ul>
-
-                        </div>
-                    </div>
-                </div>
-                <div class="col-sm-12 col-md-8" id="compare_chart">
-                    <div id="barchart_material" style="width: 900px; height: 500px;"></div>
-                </div>
-            </div>
-
-            <div class="row" id="explore">
-                <p>Fancy Graph Exploration Stuff from Philipp</p>
-            </div>
-
-
-            {% if results %}
-            <h2 class="sub-header">Authors --
-                <mark>{{ field_of_study }}</mark>
-            </h2>
-
-            <div class="table-responsive">
-                <table class="table table-striped">
-                    <thead>
-                    <tr>
-                        <th>Name</th>
-                        <th>Fields of Study</th>
-                        <th>Cited</th>
-                        <th>Has Organization</th>
-                        <th>Measures</th>
-                        <th>Updated At</th>
-                        <th>Created At</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-
-                    {% for result in results %}
-                    <tr>
-                        <td>{{ result.name }}</td>
-                        <td>{{ result.fields_of_study }}</td>
-                        <td>{{ result.cited }}</td>
-                        <td>{{ result.hasCo }}</td>
-                        <td>{{ result.measures }}</td>
-                        <td>{{ result.updated_at }}</td>
-                        <td>{{ result.created_at }}</td>
-                    </tr>
-                    {% endfor %}
-
-                    </tbody>
-                </table>
-            </div>
-
-            {% endif %}
-            <!-- AUTHORS TABLE -->
 
         </div>
-
-
     </div>
 </div>
 {%- endblock %}
@@ -161,7 +70,10 @@ intact. #}
 {% block scripts -%}
 {{super()}}
 <script type="text/javascript">
-    var data = [{'key': 'Max', values: [10, 50, 500, 50, 50, 50]}, {'key': 'Avg', data: [110, 302, 440, 4550, 34, 4]}]
+    var data = [{'key': 'Max', values: [10, 50, 500, 50, 50, 50]}, {
+        'key': 'Avg',
+        data: [110, 302, 440, 4550, 34, 4]
+    }]
 
     google.load("visualization", "1.1", {packages: ["bar"]});
     google.setOnLoadCallback(drawChart);

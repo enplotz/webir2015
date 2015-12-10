@@ -39,7 +39,7 @@ intact. #}
 
                     <p>
                         {% for field in researcher.fields_of_study %}
-                        <span><a href="/fos/{{field}}">{{field}} </a></span>
+                        <span><a href="/fos/{{field}}">{{field}}</a> (<a href="/researcher/{{researcher.id}}/fos/{{field}}">compare</a>)</span>
                         {% endfor %}
                     </p>
                 </div>
