@@ -1,0 +1,31 @@
+{# This simple template derives from ``base.html``. See ``base.html`` for
+more information about template inheritance. #}
+{%- extends "base.html" %}
+
+{# Loads some of the macros included with Flask-Bootstrap. We are using the
+utils module here to automatically render Flask's flashed messages in a
+bootstrap friendly manner #}
+{% import "bootstrap/utils.html" as utils %}
+
+
+{# Inside the ``content`` is where you should place most of your own stuff.
+This will keep scripts at the page end and a navbar you add on later
+intact. #}
+
+{% block content %}
+<div class="container-fluid">
+    <h2>Search</h2>
+    <div class="row" id="search">
+
+        <p>Search for {{ entity_name }}!</p>
+
+        <form role="form" method='POST' action='{{ action }}'>
+            <div class="form-group">
+                <input type="text" name="entity_value" class="form-control" id="url-box"
+                       placeholder="Enter {{ entity_name }}..." style="max-width: 300px;">
+            </div>
+            <button type="submit" class="btn btn-default">Submit</button>
+        </form>
+    </div>
+</div>
+{%- endblock %}

@@ -35,6 +35,8 @@ Base = automap_base()
 engine = create_engine(app.config['SQL_ALCHEMY_DATABASE_URI'])
 Base.prepare(engine, reflect=True)
 Author = Base.classes.authors
+Document = Base.classes.documents
+Labels = Base.classes.labels
 
 toolbar = DebugToolbarExtension(app)
 
@@ -43,24 +45,65 @@ toolbar = DebugToolbarExtension(app)
 def index():
     errors = []
     results = {}
-    if request.method == 'POST':
-        fos = request.form['field_of_study']
-        try:
-            print(fos)
-            # QUERY FOR AUTHORS HAVING THE FOS
-            session = Session(engine)
-            try:
-                res = session.query(Author).filter(Author.fields_of_study.contains(cast([fos], postgresql.ARRAY(String)))).all()
-            finally:
-                session.close()
-        except Exception as e:
-            errors.append(e)
-            return render_template('index.html', errors=errors)
-        if res:
-            print('Got {0} results. First is {1}.'.format(len(res), res[0]) )
-            return render_template('index.html', results=res, field_of_study=fos)
+
     return render_template('index.html')
 
+@app.route('/researcher', methods=['POST', 'GET'])
+def find_researcher():
+    if request.method == 'POST':
+        researcher = request.form['entity_value']
+        return redirect(url_for('show_researcher_profile', id=researcher))
+    return show_search_form('Researcher', '/researcher')
+
+@app.route('/researcher/<id>')
+def show_researcher_profile(id):
+    errors = []
+    results = {}
+    try:
+        # QUERY FOR AUTHORS HAVING THE FOS
+        session = Session(engine)
+        try:
+            res = session.query(Author).get(id)
+            pub = session.query(Document).filter(Document.author_id == id).all()
+        finally:
+            session.close()
+    except Exception as e:
+        errors.append(e)
+        return render_template('researcher.html', errors=errors)
+
+    return render_template('researcher.html', researcher=res, publications=pub)
+
+@app.route('/researcher/<id>/fos/<field_name>')
+def compare_researcher_fos(id, field_name):
+    pass
+
+def show_search_form(entity_name, action):
+    return render_template('search_entity.html', entity_name=entity_name, action=action)
+
+@app.route('/fos', methods=['POST', 'GET'])
+def find_field():
+    if request.method == 'POST':
+        fos = request.form['entity_value']
+        return redirect(url_for('show_field', field_name=fos))
+    return show_search_form('Field Of Study', '/fos')
+
+@app.route('/fos/<field_name>')
+def show_field(field_name):
+    errors = []
+    results = {}
+    try:
+        # QUERY FOR AUTHORS HAVING THE FOS
+        session = Session(engine)
+        try:
+            res = session.query(Author).filter(Author.fields_of_study.contains(cast([field_name], postgresql.ARRAY(String)))).all()
+        finally:
+            session.close()
+    except Exception as e:
+        errors.append(e)
+        return render_template('fos.html', errors=errors)
+
+    print('Got {0} results.'.format(len(res)))
+    return render_template('fos.html', results=res, field_of_study=field_name)
 
 if __name__ == '__main__':
     print(environ['APP_SETTINGS'])

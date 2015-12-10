@@ -1,0 +1,133 @@
+{# This simple template derives from ``base.html``. See ``base.html`` for
+more information about template inheritance. #}
+{%- extends "base.html" %}
+
+{# Loads some of the macros included with Flask-Bootstrap. We are using the
+utils module here to automatically render Flask's flashed messages in a
+bootstrap friendly manner #}
+{% import "bootstrap/utils.html" as utils %}
+
+
+{# Inside the ``content`` is where you should place most of your own stuff.
+This will keep scripts at the page end and a navbar you add on later
+intact. #}
+
+{% block content %}
+<div class="container-fluid">
+    {% if errors %}
+    <div class="row">
+        {% for error in errors %}
+        <div class="alert alert-danger" role="alert">
+            <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
+            <span class="sr-only">Error:</span>
+            {{ error }}
+        </div>
+        {% endfor %}
+    </div>
+    {%endif%}
+    {% if researcher %}
+    <h1>Researcher Profile</h1>
+
+    <div class="row">
+        <div class="col-sm-3 col-md-3">
+            <div class="thumbnail">
+                <img src="https://scholar.google.de/citations?view_op=view_photo&user={{researcher.id}}&citpid=2"
+                     alt="..." width="150px" height="150px">
+
+                <div class="caption">
+                    <h3><a href="https://scholar.google.ch/citations?hl=de&user={{researcher.id}}">{{researcher.name}}</a></h3>
+
+                    <p>
+                        {% for field in researcher.fields_of_study %}
+                        <span><a href="/fos/{{field}}">{{field}} </a></span>
+                        {% endfor %}
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div class="table-responsive col-sm-3 col-md-3">
+            {% if not researcher.measures %}
+            <div class="alert alert-info" role="alert">
+                <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
+                <span class="sr-only">Info:</span>
+                Author did not have any measures present.
+            </div>
+            {% else %}
+            <table class="table table-striped">
+                <thead>
+                <tr>
+                    <th>Citation indices</th>
+                    <th>All</th>
+                    <th>Since 2010</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                    <td>Citations</td>
+                    <td>{{researcher.measures[0]}}</td>
+                    <td>{{researcher.measures[1]}}</td>
+                </tr>
+                <tr>
+                    <td>h-index</td>
+                    <td>{{researcher.measures[2]}}</td>
+                    <td>{{researcher.measures[3]}}</td>
+                </tr>
+                <tr>
+                    <td>i10-index</td>
+                    <td>{{researcher.measures[4]}}</td>
+                    <td>{{researcher.measures[5]}}</td>
+                </tr>
+                </tbody>
+            </table>
+            {% endif %}
+        </div>
+
+    </div>
+    <div class="row">
+        <div class="col-sm-12">
+            <h2>Publications ({{publications|length}})</h2>
+
+            <div class="table-responsive ">
+                {% if not publications %}
+                <div class="alert alert-info" role="alert">
+                    <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
+                    <span class="sr-only">Info:</span>
+                    Author does not have any publications present.
+                </div>
+                {% else %}
+                <table class="table table-striped" id="publications">
+                    <thead>
+                    <tr>
+                        <th>Title</th>
+                        <th>Cite Count</th>
+                        <th>Year</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for pub in publications %}
+                    <tr>
+                        <td>
+                            <a href="https://scholar.google.ch/citations?view_op=view_citation&hl=de&user={{researcher.id}}&citation_for_view={{researcher.id}}:{{pub.id}}">{{pub.title}}</a>
+                        </td>
+                        <td>{% if pub.cite_count %}{{pub.cite_count}}{% endif %}</td>
+                        <td>{{pub.year}}</td>
+                    </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{%- endblock %}
+
+{% block scripts -%}
+{{super()}}
+<script type="text/javascript">
+$(document).ready(function() {
+$('#publications').DataTable();
+} );
+</script>
+{% endblock %}
