@@ -33,18 +33,56 @@ html,
 body {
     height: 100%;
     width: 100%;
+font-size:10px; 
 }
 #wrapperOuter { 
-  position: absolute;
-   top: 50%;
-   margin-top: -350px;/* half of #content height*/
-   left: 0;
-   width: 100%;
+width:1200px;
+	height:650px;
+	position:absolute;
+	left:50%;
+	top:50%;
+	margin:-325px 0 0 -600px;
+
 }
 #wrapper { 
-  height:700px;
-  width:75%; 
-  min-width:900px;
-  margin: 0 auto;
+  float:left; 
+  height:650px;
+  width:calc(100% - 150px);
   background:  	#606060   ; 
+}
+#wrapperInfo { 
+ width:150px; 
+height:650px; 
+float:left;
+background:black; 
+color: white; 	
+}
+#colorPicker {
+    padding: 2px;
+}
+
+#colorPicker td {
+    width: 10px;
+    height: 10px;
+    border: solid;
+    border-width: 2px;
+    border-color: white;
+    cursor: pointer;
+}
+
+#colorPicker td.selectedPick {
+    border-color: steelblue;
+}
+#spinner{
+width:62px; 
+}
+select {
+width:90px; 
+}
+#profile {
+ position:relative;
+   top:50%;
+   left:50%;
+   margin-top:-70px;
+   margin-left:-57px;
 }

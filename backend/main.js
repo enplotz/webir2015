@@ -50,17 +50,15 @@ app.post('/ExtendedByID', function(req, res){
            console.log("Postgres connection error.", error);
         } else { 
             var query;
-            if (req.body.class === 'Author') {                
-                query = 'SELECT author.*, links FROM ('; 
-query += ' SELECT rel, array_agg(li) AS links FROM ('; 
-query += ' SELECT DISTINCT ON (direct.rel, li) direct.rel, CASE WHEN co.author1 = direct.rel THEN co.author2'; 
-query += ' ELSE co.author1';
-query += ' END AS li FROM (';
-query += ' SELECT CASE WHEN author1 = '+ req.body.obj.clicked +' THEN author2' 
-query += ' ELSE author2';   
-query += ' END AS rel FROM coauthor' 
-query += ') direct, coauthor co WHERE co.author1=direct.rel OR co.author2 = direct.rel AND direct.rel NOT IN ('+req.body.obj.all.toString()+')) snd GROUP BY rel';
-query += ') third, author WHERE author.id = rel'; 
+            if (req.body.class === 'Author') {          
+
+				query = 'SELECT author.*, links FROM ('; 
+				query += ' SELECT rel, array_agg(li) AS links FROM ('
+ query += ' SELECT DISTINCT ON (direct.rel, li) direct.rel, CASE WHEN co.author1 = direct.rel THEN co.author2  WHEN co.author2 = direct.rel THEN co.author1 END AS li FROM (' 
+query += 'SELECT CASE WHEN author1 =  '+req.body.obj.clicked+' THEN author2 ELSE author1  END AS rel FROM coauthor c WHERE c.author1= ' +req.body.obj.clicked+' OR c.author2='+req.body.obj.clicked+'  ORDER BY freq DESC LIMIT '+req.body.limit+' ) direct, coauthor co WHERE  (direct.rel NOT IN ('+req.body.obj.all.toString()+')) )'
+query += '  snd WHERE (li IS NOT NULL) GROUP BY rel';
+query += ' ) third, author WHERE author.id = rel' 
+console.log(query); 
             } else if (req.body.class === 'FOS') {
 
             } else if (req.body.class === 'Uni') {
