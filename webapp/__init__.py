@@ -14,6 +14,7 @@ from os.path import join, dirname
 from dotenv import load_dotenv
 from os import environ
 from flask_debug import Debug
+from queries.dashboard import MOST_CITED_BY_FIELD, avg_cite_sql
 
 dotenv_path = join(dirname(__file__), '.env')
 load_dotenv(dotenv_path)
@@ -36,28 +37,15 @@ Label = Base.classes.labels
 
 toolbar = DebugToolbarExtension(app)
 
-
-def avg_cite_sql(fields):
-    sql = 'WITH ' + \
-          'sub_authors AS ( ' + \
-          'SELECT * FROM authors WHERE fields_of_study @> ARRAY[' + \
-          ', '.join(map(lambda f: '\'{}\''.format(f), fields)) + \
-          ']::varchar[] AND cited IS NOT NULL AND measures IS NOT NULL' + \
-          '  ),' + \
-          '    unnested AS (' + \
-          '      SELECT id, generate_series(1, 6), unnest(measures) FROM sub_authors),' + \
-          '    t1 AS (' + \
-          '      SELECT generate_series, avg(unnest) AS average, NULL as avg_cited FROM unnested GROUP BY generate_series ORDER BY generate_series),' + \
-          '  t2 as (SELECT NULL::numeric[] as array_agg , avg(cited) as avg_cited FROM sub_authors GROUP BY sub_authors.fields_of_study)' + \
-          'SELECT array_agg(average) as avg_measures, min(t2.avg_cited) as avg_cited FROM t1, t2;'
-    # print(sql)
-    return sql
-
-
-@app.route('/', methods=['GET', 'POST'])
+@app.route('/', methods=['GET'])
 def index():
     errors = []
     results = {}
+
+    # Dashboard
+    # Top-Researcher by Field (cited)
+    # Max-Cites by Field
+    # Avg # Cites by Field
 
     return render_template('index.html')
 

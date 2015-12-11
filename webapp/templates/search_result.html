@@ -42,7 +42,11 @@ intact. #}
                 <tr>
                     <td><a href="/researcher/{{researcher.id}}">{{researcher.name}}</a></td>
                     <td>{%if researcher.cited%}{{researcher.cited}}{% endif %}</td>
-                    <td>{{ researcher.fields_of_study | join(", ") }}</td>
+                    <td>
+                        {% for f in researcher.fields_of_study %}
+                            <a href="/fos/{{f}}">{{f}}</a>
+                        {% endfor %}
+                    </td>
                     <td>{{researcher.hasCo}}</td>
                     <td>{% if researcher.org %}<a href="https://scholar.google.ch/citations?view_op=view_org&org={{researcher.org}}&hl=de&oi=io">GS</a>{%endif%}</td>
                 </tr>

@@ -30,6 +30,8 @@ class DatabaseSavingPipeline(object):
         create_authors_table(engine)
         self.Session = sessionmaker(bind=engine)
 
+    # TODO batched insert for same items...
+
     def process_item(self, item, spider):
         """ Save items in the database.
         :param item: item to save
