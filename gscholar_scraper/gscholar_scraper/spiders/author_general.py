@@ -8,39 +8,55 @@ from models import db_connect, windowed_query, column_windows
 from sqlalchemy.orm import sessionmaker
 import random
 import urllib2
+import urlparse
 
-
-def all_fields():
-    engine = db_connect()
-    session = sessionmaker(bind=engine)()
-
-    try:
-        for window in windowed_query(session.query(FOSItem.Model), FOSItem.Model.field_name, 1000):
-            yield window
-    finally:
-        session.close()
-
-class AuthorLabels(scrapy.Spider):
+class AuthorGeneral(scrapy.Spider):
     name = "author_general"
     handle_httpstatus_list = [200, 302, 400, 402, 503]
 
     # use &hl=de parameter for appropiate citecount pattern
     pattern = 'https://scholar.google.de/citations?view_op=search_authors&hl=de&mauthors=label:{0}'
 
+    def next_window(self):
+        engine = db_connect()
+        session = sessionmaker(bind=engine)()
+        window_size = 1000
+        start_row = self.state.get('start_row', 0)
+        ffwd = True
+        self.logger.debug('Starting row %d' % start_row)
+        try:
+            rows = windowed_query(session.query(FOSItem.Model), FOSItem.Model.field_name, window_size, asc=False)
+            for row in rows:
+                if ffwd:
+                    for i in range(0, start_row):
+                        # fast-forward seen rows...
+                        self.logger.debug('Fast-forwarding...')
+                        rows.next()
+                    ffwd = False
+                yield row
+                self.state['start_row'] = self.state.get('start_row', 0) + 1
+        finally:
+            session.close()
+
     def __init__(self, *args, **kwargs):
         super(self.__class__, self).__init__(*args, **kwargs)
 
         # fields from the database
-        self.fields = all_fields()
+        self.fields = None #self.all_fields()
         # appended urls from pagination
         self.container = []
 
         # select a field to start at
-        if self.fields:
-            start_label = self.fields.next().field_name
-            print 'starting with label %s ' % start_label
+
+        engine = db_connect()
+        session = sessionmaker(bind=engine)()
+        try:
+            start_label = session.query(FOSItem.Model).first().field_name
+            self.logger.debug('starting with label %s ' % start_label)
             enc = urllib2.quote(start_label.encode('utf-8')).encode('ASCII')
             self.start_urls = [self.pattern.format(enc)]
+        finally:
+            session.close()
 
     def next_label_from_db(self):
         next_label = next(self.fields, None)
@@ -69,6 +85,12 @@ class AuthorLabels(scrapy.Spider):
             return next_url
 
     def parse(self, response):
+        if not self.fields:
+            # init database fields from saved state
+                self.fields = self.next_window()
+
+        search_fos =  urlparse.parse_qs(urlparse.urlparse(response.url).query)['mauthors'][0].split(':')[1]
+        self.logger.debug('Search fos: %s' % search_fos)
         # get 10 author divs
         for divs in response.xpath('//div[@class="gsc_1usr gs_scl"]')[0:9]:
             user = divs.extract()
@@ -91,7 +113,12 @@ class AuthorLabels(scrapy.Spider):
                 cited = citecount.group(1) if citecount else None
                 item.add_value('cited', cited)
                 yield item.load_item()
-
+            # Also scrape field of studies while we are at it
+            for f in fos:
+                if f != search_fos:
+                    fos_item = FOSItem()
+                    fos_item['field_name'] = f
+                    yield fos_item
         # generate  next url
         new1 = response.xpath('//*[@id="gsc_authors_bottom_pag"]/span/button[2]').extract_first()
         if new1:

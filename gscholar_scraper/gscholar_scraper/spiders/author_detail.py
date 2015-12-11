@@ -46,7 +46,7 @@ class AuthorDetails(scrapy.Spider):
         next_author = next(self.missing_authors, None)
         if not next_author:
             return None
-        self.logger.debug('Choosing existing label %s.' % next_author.name)
+        self.logger.debug('Choosing existing author %s.' % next_author.name)
         return self.pattern.format(next_author.id)
 
     def choose_next(self):
