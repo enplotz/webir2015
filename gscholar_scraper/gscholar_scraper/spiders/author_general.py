@@ -100,7 +100,7 @@ class AuthorGeneral(scrapy.Spider):
 
             id = re.search('citations\?user=([^&]+)(&|)',user)
             name = re.search('alt="([^"]+)"', user)
-            citecount = re.search('<div class="gsc_1usr_cby">Zitiert von: ([0-9]+)</div>', user)
+            citecount = re.search('<div class="gsc_1usr_cby">.*([0-9]+)</div>', user)
             fostmp = re.findall('label:([^"]+)("|)', user)
             fos = [i[0] for i in fostmp]
             if id and name:

@@ -46,6 +46,8 @@ def index():
     # Top-Researcher by Field (cited)
     # Max-Cites by Field
     # Avg # Cites by Field
+    # Number items (authors, labels, documents, coauthorships)
+    # Timeline documents over time
 
     return render_template('index.html')
 
