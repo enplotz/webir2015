@@ -12,6 +12,7 @@ bootstrap friendly manner #}
 This will keep scripts at the page end and a navbar you add on later
 intact. #}
 
+
 {% block content %}
 <div class="container-fluid">
     <div class="row">
@@ -123,10 +124,12 @@ intact. #}
                     </div>
                 </div>
             </div>
-            {% endif %}
-            <div class="row" id="explore">
-                <p>Fancy Graph Exploration Stuff from Philipp</p>
+
+            <div class="row">
+
+
             </div>
+            {% endif %}
         </div>
     </div>
 </div>
@@ -134,30 +137,37 @@ intact. #}
 
 {% block scripts -%}
 {{super()}}
-{% if researcher and researcher.measures and avg %}
+ {% if researcher and researcher.measures and avg %}
+
 <script type="text/javascript">
+    $(function () { // doc loaded
 
-    google.load("visualization", "1.1", {packages: ["bar"]});
-    google.setOnLoadCallback(drawChart);
-    function drawChart() {
-        var data = google.visualization.arrayToDataTable([
-            ['Person', '0', '1', '2', '3', '4', '5'],
-            ['{{researcher.name}}', {{researcher.measures | join(", ")}}],
-            ['Avg Researcher In {{field_name}}', {{avg.avg_measures | join(", ") }}]])
-        ;
+        __initGoogleVis();
 
-        var options = {
-            chart: {
-                title: 'Scientific Measurements',
-                subtitle: 'Citation indices',
-            },
-            bars: 'vertical' // Required for Material Bar Charts.
-        };
 
-        var chart = new google.charts.Bar(document.getElementById('barchart_material'));
+        function __initGoogleVis(){
+            console.log('test');
+            google.load("visualization", "1.1", {packages: ["bar"]});
+            google.setOnLoadCallback(drawChart); //gvis ready
 
-        chart.draw(data, options);
-    }
+            function drawChart() {
+                var data = google.visualization.arrayToDataTable([
+                        ['Person', '0', '1', '2', '3', '4', '5'],
+                        ['{{researcher.name}}', {{researcher.measures | join(", ")}}],
+                        ['Avg Researcher In {{field_name}}', {{avg.avg_measures | join(", ") }}]]);
+                var options = {
+                                chart: {
+                                title: 'Scientific Measurements',
+                                subtitle: 'Citation indices'
+                                },
+                                bars: 'vertical' // Required for Material Bar Charts.
+                              };
+            var chart = new google.charts.Bar(document.getElementById('barchart_material'));
+            chart.draw(data, options);
+            }
+        }
+
+    });
 </script>
-{% endif %}
+ {% endif %}
 {% endblock %}

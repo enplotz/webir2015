@@ -35,7 +35,13 @@ for an overview. #}
 {{super()}}  {# do not forget to call super or Bootstrap's own stylesheets
 will disappear! #}
 <link rel="stylesheet" type="text/css"
-      href="{{url_for('static', filename='dashboard.css')}}">
+      href="{{url_for('static', filename='css/dashboard.css')}}">
+<link rel="stylesheet" type="text/css"
+      href="{{url_for('static', filename='css/style_explorer.css')}}">
+<link rel="stylesheet" type="text/css"
+      href="{{url_for('static', filename='css/jquery_ui.css')}}">
+ <link rel="stylesheet" type="text/css"
+      href="{{url_for('static', filename='css/d3.css')}}">
 <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.10/css/dataTables.bootstrap.min.css">
 
 {% endblock %}
@@ -45,6 +51,10 @@ will disappear! #}
 <script type="text/javascript" src="https://www.google.com/jsapi"></script>
 <script type="text/javascript" src="https://cdn.datatables.net/1.10.10/js/jquery.dataTables.min.js"></script>
 <script type="text/javascript" src="https://cdn.datatables.net/1.10.10/js/dataTables.bootstrap.min.js"></script>
+<script type="text/javascript" src="{{url_for('static', filename='js/d3.js')}}"></script>
+<script type="text/javascript" src="{{url_for('static', filename='js/jquery-ui.js')}}"></script>
+<script type="text/javascript" src="{{url_for('static', filename='js/entity.js')}}"></script>
+<script type="text/javascript" src="{{url_for('static', filename='js/container.js')}}"></script>
 {% endblock %}
 
 {# Finally, round things out with navigation #}

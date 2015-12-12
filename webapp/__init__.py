@@ -7,14 +7,14 @@ from sqlalchemy import create_engine, String
 from sqlalchemy.sql.expression import cast
 from sqlalchemy.dialects import postgresql
 from flask_bootstrap import Bootstrap
-from flask import Blueprint, render_template, flash, redirect, url_for
+from flask import Blueprint, render_template, flash, redirect, url_for,jsonify, request
 from flask_bootstrap import __version__ as FLASK_BOOTSTRAP_VERSION
 from markupsafe import escape
 from os.path import join, dirname
 from dotenv import load_dotenv
 from os import environ
 from flask_debug import Debug
-from queries.dashboard import MOST_CITED_BY_FIELD, avg_cite_sql
+from queries.dashboard import MOST_CITED_BY_FIELD, avg_cite_sql,top_authors_m
 
 dotenv_path = join(dirname(__file__), '.env')
 load_dotenv(dotenv_path)
@@ -40,20 +40,42 @@ toolbar = DebugToolbarExtension(app)
 @app.route('/', methods=['GET'])
 def index():
     errors = []
-    results = {}
+    results = []
 
     # Dashboard
     # Top-Researcher by Field (cited)
     # Max-Cites by Field
     # Avg # Cites by Field
-    # Number items (authors, labels, documents, coauthorships)
-    # Timeline documents over time
-
-    return render_template('index.html')
+    try:
+        session = Session(engine)
+        try:
+            results = session.execute(top_authors_m(1,10))
+        finally:
+            session.close()
+    except Exception as e:
+        errors.append(e)
+        return render_template('index.html', errors=errors, rankings=results)
+    return render_template('index.html', rankings= results, errors= errors)
 
 
 def field_term(search_term):
     return '_'.join(search_term.lower().split(' '))
+
+@app.route('/getRankings/<m>', methods=['GET', 'POST'])
+def getRankings(m):
+    errors = []
+    result = []
+    try:
+        session = Session(engine)
+        try:
+            result = session.execute(top_authors_m(int(m),10))
+        finally:
+            session.close()
+    except Exception as e:
+        errors.append(e)
+    return jsonify(results = [dict(row) for row in result], errors =[])
+
+
 
 
 @app.route('/search', methods=['GET', 'POST'])

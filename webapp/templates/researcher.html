@@ -37,10 +37,12 @@ intact. #}
                 <div class="caption">
                     <h3><a href="https://scholar.google.ch/citations?hl=de&user={{researcher.id}}">{{researcher.name}}</a></h3>
 
-                    <p>
-                        {% for field in researcher.fields_of_study %}
-                        <span><a href="/fos/{{field}}">{{field}}</a> (<a href="/researcher/{{researcher.id}}/fos/{{field}}">compare</a>)</span>
-                        {% endfor %}
+                    <p> <!-- 'if' required for some reason...-->
+                        {%  if researcher.fields|length > 0  %}
+                            {% for field in researcher.fields_of_study %}
+                            <span><a href="/fos/{{field}}">{{field}}</a> (<a href="/researcher/{{researcher.id}}/fos/{{field}}">compare</a>)</span>
+                            {% endfor %}
+                        {% endif %}
                     </p>
                 </div>
             </div>
@@ -119,6 +121,56 @@ intact. #}
             </div>
         </div>
     </div>
+    <div class="row">
+     <div id="wrapperOuter">
+        <div id="wrapper">
+
+        </div>
+        <div id="wrapperInfo">
+            <div id="upperInfo" style="width:150px; height:200px;">
+                <img width="114" height="150" id="profile" alt="Hover a node."></img>
+
+            </div>
+			<center>
+			<span id="classLabel">h-Index</span>:<span id="valLabel">-</span>
+			</center>
+        <hr>
+        <button id='btnUndo'>Undo</button>
+        <button id='btnRedo'>Redo</button>
+           <div id="settings" style="bottom:0;padding-bottom:4px;position:relative;width:150px;">
+               <hr>
+               <div id="settingsInner" style="padding-left:12px;">
+                    <div id="nodeExpansion">
+              <i>Max. Node Expansion</i>
+            <form autocomplete="off" style="margin-left:5px">
+                <input id="spinner" name="nodeExpansion">
+            </form>
+        </div>
+        <div id="nodeAttribute">
+            <i> Node Attribute</i>
+            <form autocomplete="off" style="margin-left:5px">
+                <select name="nodeAttr" id="nodeAttr">
+                    <option value="2" selected>h-Index</option>
+					<option value="3">h-Index (2010)</option>
+					<option value="4">i-Index</option>
+					<option value="5">i-Index(2010)</option>
+					<option value="6">Documents</option>
+					<option value="7">Documents(2010)</option>
+					<option value="0">Cited</option>
+					<option value="1">Cited(2010)</option>
+                </select>
+            </form>
+        </div>
+        <div id="colorSettings">
+	       <i> Color Scheme </i>
+           <div id='colorPicker'></div>
+        </div>
+               </div>
+    </div>
+        </div>
+
+    </div>
+    </div>
     {% endif %}
 </div>
 {%- endblock %}
@@ -128,6 +180,82 @@ intact. #}
 <script type="text/javascript">
 $(document).ready(function() {
 $('#publications').DataTable();
+    __initExplorer();
+function __initExplorer(){
+
+            __cont = null;
+            __initiateGraph();
+            __initiateGUI();
+
+            function __initiateGUI(){
+                $('#wrapperOuter button').button();
+                $('#nodeAttr').selectmenu({change:function(event,ui){
+				    __cont.setMeasure(ui.item.value);
+				    $('#classLabel').text($('#nodeAttr option:selected').text());
+                }
+			   });
+
+               $('#spinner').spinner({max:20,min:1, stop: function (event, ui ) {
+                    var val = $(this).spinner( "value" );
+                    $(this).spinner("value", parseInt(val) || 1);
+                }
+                }).val(3);
+                $('#diaSettings').dialog({show: { effect: "fade", duration: 800 }, width:100, autoOpen:false, resizable:false});
+                $('#btnSettings').on('click', function(){
+                    $('#diaSettings').dialog('open');
+                });
+                $('#btnUndo').on('click', function(){
+                    __cont.undo();
+                });
+                $('#btnRedo').on('click', function(){
+                    __cont.redo();
+                });
+                __initColorPicker('#colorPicker', ['#a6cee3', '#b2df8a', '#fb9a99', '#fdbf6f', '#cab2d6', '#ffff99', '#1f78b4', '#33a02c', '#e31a1c', '#ff7f00', '#6a3d9a', '#b15928'], 6);
+
+                function __initColorPicker(parent, colors, breakIndex) {
+                    var html = '<table>';
+                    for (var i = 0; i < colors.length; i++) {
+                        if (i % breakIndex === 0 && i !== 0) html += '</tr>'; //end table row, when i is at the breaker
+                        if (i % breakIndex === 0 && i !== (colors.length - 1)) html += '<tr>'; //start new row
+                        html += '<td style="background:' + colors[i] + '"></td>'; //add row items
+                    }
+                    $(parent).html(html + '</tr></table>');
+                    $(parent).on('click', 'td', function () {
+                        if (!$(this).hasClass('selectedPick')){
+                            $(parent+' td').removeClass('selectedPick');
+                            $(this).addClass('selectedPick');
+                            __cont.setColor($(this).css('background-color'));
+                        }
+                    });
+                }
+            }
+            function __initiateGraph(){
+                __cont = new Container('#wrapper', 'author', 1,  function (obj) {
+                getExtended(obj, function(newNodes){
+                    __cont.addNodes(newNodes,obj.clicked);
+                });
+                }, {enter:function(d){
+                    $('#profile').attr('src','https://scholar.google.de/citations?view_op=view_photo&user='+d.gs_id);
+			        $('#valLabel').html(d.measures[$('#nodeAttr option:selected').val()]);
+                    }, leave: function(d){
+                    $('#profile').attr('src', '');
+				    $('#valLabel').text('-');
+		            }
+		        });
+                new Entity(1, function(d){
+                    __cont.addNodes([d],null, '{{ researcher.name|string }}');
+                });
+                function getExtended(obj, cb){
+                    $.post('http://localhost:8000/ExtendedByID', {
+                        class: 'Author',
+                        obj: obj,
+                        limit: $('#spinner').spinner('value')
+                    }, 'json').done(function (data) {
+                        cb(data);
+                    });
+                }
+            }
+        }
 } );
 </script>
 {% endblock %}

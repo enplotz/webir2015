@@ -14,6 +14,17 @@ intact. #}
 
 {% block content %}
 <div class="container-fluid">
+        {% if errors %}
+        <div class="row">
+        {% for error in errors %}
+        <div class="alert alert-danger" role="alert">
+            <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
+            <span class="sr-only">Error:</span>
+            {{ error }}
+        </div>
+        {% endfor %}
+    </div>
+    {%endif%}
     <div class="row">
 
         <div class="col-sm-2 col-md-1 sidebar">
@@ -60,9 +71,46 @@ intact. #}
             <span class="text-muted">Something else</span>
             </div>
             </div>
+            {% if rankings %}
 
-
+        <div class="row" style="width:300px">
+           <div id="rankings">
+           <h4 style="float:left">Top Researchers</h4>
+            <form autocomplete="off" style="margin-left:5px;margin-top:10px;float:left">
+                <select name="rankAttr" id="rankAttr">
+                    <option value="3" selected>h-Index</option>
+					<option value="4">h-Index (2010)</option>
+					<option value="5">i-Index</option>
+					<option value="6">i-Index(2010)</option>
+					<option value="7">Documents</option>
+					<option value="8">Documents(2010)</option>
+					<option value="1">Cited</option>
+					<option value="2">Cited(2010)</option>
+                </select>
+            </form>
+           </div>
+           <table class="table table-striped">
+                <thead>
+                <thead>
+                    <th>Rank</th>
+                    <th>Name</th>
+                    <th>Value</th>
+                </tr>
+                </thead>
+                <tbody id="rankingsBody">
+                {% for ranking in rankings %}
+                <tr>
+                    <td>{{ loop.index }}</td>
+                    <td><a href="/researcher/{{ ranking.id }}"> {{ ranking.name }} </a></td>
+                    <td>{{ ranking.val }}</td>
+                </tr>
+                {%  endfor %}
+               </tbody>
+           </table>
         </div>
+        {% endif %}
+        </div>
+
     </div>
 </div>
 {%- endblock %}
@@ -70,6 +118,22 @@ intact. #}
 {% block scripts -%}
 {{super()}}
 <script type="text/javascript">
+$(function(){
+    $('#rankAttr').selectmenu({change: function(event,ui) {
+        $.post("/getRankings/"+ui.item.value, {}, 'json').done(function (data) {
+            if (!data.error){
+                var tr='';
+                data.results.forEach(function(obj,i){
+                    tr+='<tr>';
+                    tr+='<td>' + (i+1) + '</td>';
+                    tr+= '<td><a href="/researcher/' + obj.id + '">'  + obj.name + '</a></td><td>' + obj.measure + '</td></tr>'
+                });
+                $('#rankingsBody').html(tr);
+            }
+        });
+    }});
+});
+/*
     var data = [{'key': 'Max', values: [10, 50, 500, 50, 50, 50]}, {
         'key': 'Avg',
         data: [110, 302, 440, 4550, 34, 4]
@@ -95,6 +159,6 @@ intact. #}
         var chart = new google.charts.Bar(document.getElementById('barchart_material'));
 
         chart.draw(data, options);
-    }
+    }*/
 </script>
 {% endblock %}

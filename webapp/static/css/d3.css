@@ -1,0 +1,43 @@
+.svgResponsive {
+    /* make svg resizable*/
+    display: inline-block;
+    position: absolute;
+    shape-rendering: "geometricPrecision"
+}
+
+.nodeContainer{
+font-size:8px;
+fill:black; 
+
+text-anchor:middle; 
+}
+.nodeContainer circle {
+
+stroke-width:5px;
+}
+.link {
+	fill:none;
+  stroke: white;
+  stroke-width: 1.5px;
+
+}
+#arrows{
+fill:white; 
+stroke:white; 
+}
+
+.axis2 path,
+
+/* for circular heat charts */
+
+.axis2 line {
+    fill: none;
+    stroke: white;
+    shape-rendering: geometricPrecision;
+    /*crisp edges would be rather buggy... */
+}
+
+.axis2 text {
+    fill: white;
+    font-size: 10px;
+}
