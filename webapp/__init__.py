@@ -14,7 +14,7 @@ from os.path import join, dirname
 from dotenv import load_dotenv
 from os import environ
 from flask_debug import Debug
-from queries.dashboard import MOST_CITED_BY_FIELD, avg_cite_sql,top_authors_m
+from queries.dashboard import MOST_CITED_BY_FIELD, avg_cite_sql,top_authors_m, time_series
 
 dotenv_path = join(dirname(__file__), '.env')
 load_dotenv(dotenv_path)
@@ -40,7 +40,9 @@ toolbar = DebugToolbarExtension(app)
 @app.route('/', methods=['GET'])
 def index():
     errors = []
-    results = []
+    ranks = []
+    series_docs = []
+    series_cites = []
 
     # Dashboard
     # Top-Researcher by Field (cited)
@@ -49,13 +51,16 @@ def index():
     try:
         session = Session(engine)
         try:
-            results = session.execute(top_authors_m(1,10))
+            ranks = session.execute(top_authors_m(1,10))
+            series_docs = session.execute(time_series(False))
+            series_cites = session.execute(time_series(True))
+
         finally:
             session.close()
     except Exception as e:
         errors.append(e)
-        return render_template('index.html', errors=errors, rankings=results)
-    return render_template('index.html', rankings= results, errors= errors)
+        return render_template('index.html', errors=errors,rankings=ranks)
+    return render_template('index.html', rankings= ranks, errors= errors)
 
 
 def field_term(search_term):
@@ -73,8 +78,23 @@ def getRankings(m):
             session.close()
     except Exception as e:
         errors.append(e)
-    return jsonify(results = [dict(row) for row in result], errors =[])
+    return jsonify(results = [dict(row) for row in result], errors =errors)
 
+@app.route('/getTimeSeries', methods=['GET','POST'])
+def getTimeSeries():
+    errors = []
+    results= []
+    try:
+        session = Session(engine)
+        try:
+            docCounts = session.execute(time_series(False))
+            citeCounts = session.execute(time_series(True))
+            results = [[dict(row) for row in docCounts], [dict(row) for row in citeCounts]]
+        finally:
+            session.close()
+    except Exception as e:
+        errors.append(e)
+    return jsonify(results = results, errors =errors)
 
 
 

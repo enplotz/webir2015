@@ -12,6 +12,12 @@ def top_authors_m(measure,limit):
         return 'SELECT a.name, a.id, COUNT(*) AS measure FROM authors a, documents d WHERE d.author_id= a.id ' +  addendum +  ' GROUP BY a.id ORDER BY measure DESC LIMIT ' + str(limit)
     return 'SELECT name,id, measures['+str(measure)+'] AS measure FROM authors WHERE measures IS NOT NULL ORDER BY measures['+str(measure)+'] DESC LIMIT ' + str(limit)
 
+def time_series(cited):
+    if cited:
+        return 'SELECT year, SUM(cite_count) AS count FROM documents d WHERE year IS NOT NULL GROUP BY year ORDER BY year'
+    else:
+        return 'SELECT year, COUNT(*) FROM documents d WHERE year IS NOT NULL GROUP BY year ORDER BY year'
+
 def avg_cite_sql(fields):
     sql = 'WITH ' + \
           'sub_authors AS ( ' + \

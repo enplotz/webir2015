@@ -71,6 +71,19 @@ intact. #}
             <span class="text-muted">Something else</span>
             </div>
             </div>
+        <div class="row" style="height:400px;">
+            <div id="timeDev">
+            <h4 style="float:left">Temporal Developments</h4>
+            <form autocomplete="off" style="margin-left:5px;margin-top:10px;float:left">
+                <select name="devType" id="devType">
+                    <option value="0" selected>#Docs</option>
+					<option value="1">#Citations</option>
+                </select>
+            </form>
+            <div id="awesomeBarChart" style="width:800px;height:300px">
+            </div>
+            </div>
+        </div>
             {% if rankings %}
 
         <div class="row" style="width:300px">
@@ -102,7 +115,7 @@ intact. #}
                 <tr>
                     <td>{{ loop.index }}</td>
                     <td><a href="/researcher/{{ ranking.id }}"> {{ ranking.name }} </a></td>
-                    <td>{{ ranking.val }}</td>
+                    <td>{{ ranking.measure }}</td>
                 </tr>
                 {%  endfor %}
                </tbody>
@@ -131,6 +144,11 @@ $(function(){
                 $('#rankingsBody').html(tr);
             }
         });
+    }});
+
+    new BarChart('#awesomeBarChart', 0);
+    $('#devType').selectmenu({change:function(event,ui){
+        $('#awesomeBarChart').data('obj').setDataIndex(parseInt(ui.item.value));
     }});
 });
 /*
