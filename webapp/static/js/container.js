@@ -83,6 +83,7 @@ nodeGradient.append("stop")
 						   .attr("spreadMethod", "pad");
 	 __scaleGradientStop1= scaleGradient.append("stop").attr("offset", "0%").attr("stop-opacity", 1)
      __scaleGradientStop2 = scaleGradient.append("stop").attr("offset", "100%").attr("stop-opacity", 1)
+    svg.append('rect').attr('width', '100%').attr('height', '100%').style('fill', 'url(#nodeGradient');
     __legendAxis = d3.svg.axis().orient("bottom").ticks(4);
     __legendAxisVis = svg.append("g").attr("class", "x axis2").attr('transform', 'translate(6,8)');				   
 	svg.append('rect').attr('width', '220px').attr('height', '10px').style("fill", "url(#scaleGradient)").attr('transform', 'translate(6,0)');

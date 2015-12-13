@@ -15,8 +15,7 @@ var BarChart = function(pCanvas, pDataIndex){
 	var focus; 
 	var context; 
 	var brush; 
-	var firstDate = new Date(1750,0,1)
-    var lastDate = new Date(2016,0,1)
+	var tooltip; 
 
 	var xScale; 
 	var x2Scale; 
@@ -35,7 +34,6 @@ var BarChart = function(pCanvas, pDataIndex){
 
 
         __requestData(function(data){
-            console.log(data);
             if (data.length > 0){
                 mainData = data;
                 dataIndex = pDataIndex;
@@ -48,11 +46,10 @@ var BarChart = function(pCanvas, pDataIndex){
                 __initGraphics();
 				$(pCanvas).data('obj', public);
             }
-        })
+        }); 
 
         function __requestData(callback){
         $.post("/getTimeSeries", {}, 'json').done(function (data) {
-
             callback((data.errors.length>0) ? data.errors : data.results);
         });
         }
@@ -64,11 +61,12 @@ var BarChart = function(pCanvas, pDataIndex){
                 .attr('height', dims.height).attr('width', '100%'); 
 			svg.append('rect').attr('width', '100%').attr('height', '100%')
                 .attr('fill', '#000318');
-		var tooltip = d3.tip()
+			tooltip = d3.tip()
                 .attr('class', 'tooltip')
                 .offset([-10, 0])
                 .html(function (d) {
-                    d.count; 
+                    console.log(d);
+                    return d.count;
                 });
             svg.call(tooltip);
 			            svg.append('defs').append('svg:clipPath').attr('id', 'clip').append('rect').attr('width', width).attr('height', focusHeight);
@@ -99,13 +97,16 @@ var BarChart = function(pCanvas, pDataIndex){
                 .attr('transform', 'translate(0,' + contextHeight + ')')
 
             //initialise time scales, axis and call the axis on the visual components, created before
+
+             var extent = d3.extent(mainData[dataIndex], function(d){
+                return d.year;
+            });
             xScale = d3.time.scale().range([0, width]);
-            x2Scale = d3.time.scale().domain([firstDate, lastDate]).range(xScale.range());
+            x2Scale = d3.time.scale().domain(extent).range(xScale.range());
             xAxis = d3.svg.axis().scale(xScale).orient('bottom')
             x2Axis = d3.svg.axis().scale(x2Scale).orient('bottom'); 
             focus.selectAll(".x.axis").transition().duration(750).call(xAxis);
             context.selectAll(".x.axis").transition().duration(750).call(x2Axis);
-
 
             //d3 brushing
             brush = d3.svg.brush()
@@ -115,9 +116,9 @@ var BarChart = function(pCanvas, pDataIndex){
                     __setExtent(domain);
                 });
 
-            __setExtent(d3.extent(mainData[dataIndex], function(d){
-                return d.year;
-            }));
+
+
+            __setExtent(extent);
 
 
 			 context.append('g')
@@ -129,8 +130,6 @@ var BarChart = function(pCanvas, pDataIndex){
         __updateGraphics();
 	}
     function __setExtent(pDomain){
-
-
                     brush.extent(pDomain);
                     xScale = xScale.domain(pDomain);
 					xAxis.scale(xScale);
@@ -160,34 +159,20 @@ var BarChart = function(pCanvas, pDataIndex){
 
         focus.selectAll(".y.axis").transition().duration(750).call(yAxis);
 
-        var boundingBoxes = focus.select('.focusCanvas').selectAll('.bar').data(mainData[dataIndex]);
-        boundingBoxes.enter().append('rect').attr('class','bar')
-        boundingBoxes.exit().remove();
+        var focusRects = focus.select('.focusCanvas').selectAll('.bar').data(mainData[dataIndex]);
+        focusRects.enter().append('rect').attr('class','bar')
+		.on('mouseenter', function(d){tooltip.show(d)})
+		.on('mousemove', function(d){tooltip.show(d)})
+		.on('mouseleave', function(d){tooltip.hide(d)});
+        focusRects.exit().remove();
 
-        boundingBoxes.attr('transform', function (d) {
+        focusRects.attr('transform', function (d) {
             return 'translate(' + xScale(d.year) + ',0)';
-        });
-
-
-        /*
-            UPDATE
-            
-            Dont use a transition for changing the width.
-            Changing width is mainly done, while rescaling the window and a transition wouldnt look nice.
-            Scaling during brushing is another thing...
-
-        */
-        boundingBoxes.attr('width', function (d) {
+        }).attr('width', function (d) {
             return  (xScale(new Date(2015, 0, 1)) - xScale(new Date(2014, 0, 1)))*2;
         });
 
-        /*
-            Transitions, only after data updates. 
-            -> Filter applied, respectively left-click on bar
-    
-    
-        */
-        boundingBoxes.transition().duration(700)
+        focusRects.transition().duration(700)
             .attr('height', function (d) {
                 return focusHeight - yScale(d.count);
             })
@@ -199,17 +184,17 @@ var BarChart = function(pCanvas, pDataIndex){
             });
 
 			
-        var sel = context.selectAll('.bar')
+        var contextRects = context.selectAll('.bar')
             .data(mainData[dataIndex]);
 
-        sel.enter().append('rect').attr('class', 'bar')
-        sel.exit().transition().duration(700).remove();
+        contextRects.enter().append('rect').attr('class', 'bar')
+        contextRects.exit().transition().duration(700).remove();
 		
-        sel.attr('transform', function (d) {
+        contextRects.attr('transform', function (d) {
             return 'translate(' + x2Scale(d.year) + ',0)'
         });
 		
-        sel.transition().duration(700).attr('width', function (d) {
+        contextRects.transition().duration(700).attr('width', function (d) {
                 return 0.9999 * (x2Scale(new Date(1971, 1, 1)) - x2Scale(new Date(1970, 1, 1)))
             })
             .attr('height', function (d) {

@@ -72,10 +72,11 @@ select {
 width:90px; 
 
 }
-#rankings,#timeDev {
+#rankings {
 font-size:9px;
-
-
+}
+#timeDev { 
+font-size:9px; 
 }
 #profile {
  position:relative;
