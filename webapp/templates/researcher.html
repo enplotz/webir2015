@@ -250,12 +250,15 @@ function __initExplorer(){
                     __cont.addNodes([d],null, '{{ researcher.name|string }}');
                 });
                 function getExtended(obj, cb){
-                    $.post('http://localhost:8000/ExtendedByID', {
-                        class: 'Author',
-                        obj: obj,
+                    $.post('/co/getExtended', {
+                        all: obj.all,
+                        clicked: obj.clicked,
                         limit: $('#spinner').spinner('value')
                     }, 'json').done(function (data) {
-                        cb(data);
+                        if (!data.error){
+                            cb(data.results)
+                        }
+
                     });
                 }
             }

@@ -16,6 +16,7 @@ from sqlalchemy.sql.expression import cast
 from flask.ext.cache import Cache
 
 from queries.dashboard import avg_cite_sql,top_authors_m, time_series
+import queries.co_network as co
 
 dotenv_path = join(dirname(__file__), '.env')
 load_dotenv(dotenv_path)
@@ -187,6 +188,38 @@ def show_field(field_name):
         return render_template('fos.html', errors=errors)
     return render_template('fos.html', results=res, field_of_study=field_name)
 
+
+# co author networks:
+
+
+@app.route('/co/EntityByID/<i>',  methods=['POST', 'GET'])
+def getEntityById(i):
+    errors = []
+    results = []
+    try:
+        ent = session.execute(co.getEntity(i))
+        results  = [dict(row) for row in ent]
+    except Exception as e:
+        errors.append(e)
+    return jsonify(results = results, errors =errors)
+
+@app.route('/co/getExtended',  methods=['POST', 'GET'])
+def getExtended():
+    errors = []
+    results = []
+    try:
+        all =  request.form['all']
+        clicked = request.form['clicked']
+
+        limit = request.form['limit']
+        print "all" + all
+        print "clicked" + clicked
+        print "limit" + limit
+        ent = session.execute(co.getExtended(clicked, [all], limit))
+        results  = [dict(row) for row in ent]
+    except Exception as e:
+        errors.append(e)
+    return jsonify(results = results, errors =errors)
 
 if __name__ == '__main__':
     # print(environ['APP_SETTINGS'])

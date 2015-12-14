@@ -8,12 +8,11 @@ var Entity = function (id, cb) {
         var __id; 
         if (typeof id === 'number') {
             __id = id;  //new data, specified by ID
-            $.post('http://localhost:8000/EntityByID', {
-                class: 'Author',
-                id: __id
-            }, 'json').done(function (data) {
-            __data = data;
-            if (cb) cb(__data);
+            $.post('/co/EntityByID/'+__id, {}, 'json').done(function (data) {
+                if (!data.error){
+                    __data = data.results[0];
+                    if (cb) cb(__data);
+                }
             });  
         } else {
             return;    
