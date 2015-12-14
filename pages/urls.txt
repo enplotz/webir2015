@@ -1,3 +1,0 @@
-01-top-venues, https://scholar.google.ch/citations?view_op=top_venues&hl=de
-02-top-venues-category, https://scholar.google.ch/citations?view_op=top_venues&hl=de&vq=bus
-

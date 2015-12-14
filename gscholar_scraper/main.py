@@ -5,6 +5,7 @@ import argparse
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Start spider process(es).')
     parser.add_argument('--settings','-s', type=str, help='additional settings arguments')
+    parser.add_argument('--spider_parameters', '-a', type=str, help='additional spider arguments')
     parser.add_argument('--output_filename','-o', type=str, help='filename for export')
     parser.add_argument('--output_filetype','-t', type=str, help='file type for export')
     parser.add_argument('--log_level', '-L', type=str, help='log level')
@@ -14,6 +15,8 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     command = 'scrapy crawl %s' % args.spider
+    if args.spider_parameters:
+        command += ' -a %s' % args.spider_parameters
     if args.settings:
         command += ' -s %s' % args.settings
     if args.output_filename:

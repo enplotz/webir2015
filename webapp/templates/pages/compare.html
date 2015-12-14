@@ -1,0 +1,116 @@
+<!-- extend base layout -->
+{% extends "base.html" %}
+
+{% block content %}
+
+    <div id="page-wrapper">
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-lg-12">
+                    <h1 class="page-header">{{ header }}</h1>
+                </div>
+                <!-- /.col-lg-12 -->
+            </div>
+            <!-- /.row -->
+            {% for error in errors %}
+                <div class="row">
+                    <div class="alert alert-danger" role="alert">
+                        <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
+                        <span class="sr-only">Error:</span>
+                        {{ error }}
+                    </div>
+                </div>
+            {% endfor %}
+            {% if researcher %}
+                <div class="row" id="compare">
+                    <h2>Comparing for Field
+                        <small>{{ field_name }}</small>
+                    </h2>
+                    <div class="row">
+                        <div class="col-sm-6 col-md-4">
+                            <div class="thumbnail">
+                                <img src="https://scholar.google.de/citations?view_op=view_photo&user={{ researcher.id }}&citpid=2"
+                                     alt="..." width="150px" height="150px">
+
+                                <div class="caption">
+                                    <h3>{{ researcher.name }}</h3>
+                                    <ul>
+                                        {% for f in researcher.fields_of_study %}
+                                            <li><a href="/fos/{{ f }}">{{ f }}</a></li>
+                                        {% endfor %}
+                                    </ul>
+
+                                </div>
+                            </div>
+                        </div>
+                        <!--<div class="col-sm-6 col-md-4">-->
+                        <!--<div class="thumbnail">-->
+                        <!--<img src="http://placekitten.com/150/114" alt="...">-->
+
+                        <!--<div class="caption">-->
+                        <!--<h3>Average User in Field</h3>-->
+
+                        <!--<ul>-->
+                        <!--<li>Chemistry</li>-->
+                        <!--<li>Biology</li>-->
+                        <!--</ul>-->
+
+                        <!--</div>-->
+                        <!--</div>-->
+                        <!--</div>-->
+                    </div>
+                    <div class="row">
+                        <div class="col-lg-12" id="compare_chart">
+                            {% if researcher and researcher.measures %}
+                                <div id="barchart_material" style="width: 900px; height: 500px;"></div>
+                            {% else %}
+                                <div class="alert alert-info" role="alert">
+                                    <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
+                                    <span class="sr-only">Info:</span>
+                                    {{ researcher.name }} currently has no measures attached.
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+        <!-- /.container-fluid -->
+    </div>
+    <!-- /#page-wrapper -->
+
+{% endblock %}
+
+{% block pagescript %}
+    {% if researcher and researcher.measures and avg %}
+
+        <script type="text/javascript">
+                __initGoogleVis();
+
+                function __initGoogleVis() {
+                    console.log('test');
+                    google.load("visualization", "1.1", {packages: ["bar"]});
+                    google.setOnLoadCallback(drawChart); //gvis ready
+
+                    function drawChart() {
+                        var researcherData = []
+                        var avgData = []
+
+                        var data = google.visualization.arrayToDataTable([
+                            ['Person', 'Citations', 'Citations (Since 2010)', 'h-Index', 'h-Index (Since 2010)', 'i10-Index', 'i10-Index (Since 2010)'],
+                            ['{{researcher.name}}', {{researcher.measures | join(", ")}}],
+                            ['Avg Researcher In {{field_name}}', {{avg.avg_measures | join(", ") }}]]);
+                        var options = {
+                            chart: {
+                                title: 'Scientific Measurements',
+                                subtitle: 'Citation indices'
+                            },
+                            bars: 'vertical' // Required for Material Bar Charts.
+                        };
+                        var chart = new google.charts.Bar(document.getElementById('barchart_material'));
+                        chart.draw(data, options);
+                    }
+                };
+        </script>
+    {% endif %}
+{% endblock %}

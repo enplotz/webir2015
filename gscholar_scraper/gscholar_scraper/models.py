@@ -76,13 +76,13 @@ def column_windows(session, column, windowsize):
             end = None
         yield int_for_range(start, end)
 
-def windowed_query(q, column, windowsize):
+def windowed_query(q, column, windowsize, asc=True):
     """"Break a Query into windows on a given column."""
 
     for whereclause in column_windows(
                                         q.session,
                                         column, windowsize):
-        for row in q.filter(whereclause).order_by(column):
+        for row in q.filter(whereclause).order_by(column if asc else column.desc()):
             yield row
 
 if __name__ == '__main__':

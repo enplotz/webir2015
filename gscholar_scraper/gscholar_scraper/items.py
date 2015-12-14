@@ -4,7 +4,7 @@
 #
 # See documentation in:
 # http://doc.scrapy.org/en/latest/topics/items.html
-
+import re
 import scrapy
 import urllib2
 from scrapy.loader.processors import TakeFirst, MapCompose, Join, Compose
@@ -48,7 +48,6 @@ class CoAuthorItem(GScholarItem):
 
 class AuthorItem(GScholarItem):
 
-
     class Model(DeclarativeBase):
         """Sqlalchemy authors model"""
         __tablename__ = "authors"
@@ -66,7 +65,8 @@ class AuthorItem(GScholarItem):
     id = scrapy.Field(output_processor=TakeFirst())
     fos = scrapy.Field()
     name = scrapy.Field(output_processor=TakeFirst())
-    cited = scrapy.Field(output_processor=TakeFirst())
+    cited = scrapy.Field(output_processor=TakeFirst(),
+                         input_processor=MapCompose(lambda input: re.match('.*([0-9]+)', input).group(1) if input else None))
 
     # more detailed author info, scraped from author profiles
     measures = scrapy.Field(input_processor=MapCompose(lambda s: int(s)))
@@ -78,7 +78,7 @@ class DocItem(GScholarItem):
 
     class Model(DeclarativeBase):
         __tablename__ = "documents"
-        author_id = Column(String)
+        author_id = Column(String, primary_key=True)
         title = Column(String)
         id = Column(String, primary_key=True)
         cite_count = Column(Integer, nullable=True)

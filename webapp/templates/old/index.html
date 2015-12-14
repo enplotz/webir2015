@@ -1,0 +1,161 @@
+{# This simple template derives from ``base.html``. See ``base.html`` for
+more information about template inheritance. #}
+{%- extends "base.html" %}
+
+{# Loads some of the macros included with Flask-Bootstrap. We are using the
+utils module here to automatically render Flask's flashed messages in a
+bootstrap friendly manner #}
+{% import "bootstrap/utils.html" as utils %}
+
+
+{# Inside the ``content`` is where you should place most of your own stuff.
+This will keep scripts at the page end and a navbar you add on later
+intact. #}
+
+{% block content %}
+<div class="container-fluid">
+        {% if errors %}
+        <div class="row">
+        {% for error in errors %}
+        <div class="alert alert-danger" role="alert">
+            <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
+            <span class="sr-only">Error:</span>
+            {{ error }}
+        </div>
+        {% endfor %}
+    </div>
+    {%endif%}
+    <div class="row">
+
+{#        <div class="col-sm-2 col-md-1 sidebar">#}
+{#            <ul class="nav nav-sidebar">#}
+{#                <!-- TODO active class via javascript? -->#}
+{#                <!--<li class="active"><a href="#">Overview <span class="sr-only">(current)</span></a></li>-->#}
+{#                <li class="active"><a href="#compare">Compare</a></li>#}
+{#                <li><a href="#explore">Explore</a></li>#}
+{#            </ul>#}
+{#            <!--<ul class="nav nav-sidebar">-->#}
+{#            <!--<li><a href="">Nav item</a></li>-->#}
+{#            <!--<li><a href="">Nav item again</a></li>-->#}
+{#            <!--<li><a href="">One more nav</a></li>-->#}
+{#            <!--<li><a href="">Another nav item</a></li>-->#}
+{#            <!--<li><a href="">More navigation</a></li>-->#}
+{#            <!--</ul>-->#}
+{#        </div>#}
+
+        <div class="col-sm-12 col-md-12 main">
+            <div class="row">
+            <div class="col-lg-12">
+                <p>Hello there. We currently have <mark>{{ metrics.num_documents }} documents</mark>, <mark>{{ num_authors }} authors</mark> and
+                    <mark>{{ metrics.num_fields }} fields of studies</mark> indexed. For <mark>{{ metrics.num_authors_fully }} authors</mark> there exist detailed metrics.</p>
+            </div>
+            </div>
+        <div class="row" style="height:400px;">
+            <div id="timeDev">
+            <h4 style="float:left">Temporal Developments</h4>
+            <form autocomplete="off" style="margin-left:5px;margin-top:10px;float:left">
+                <select name="devType" id="devType">
+                    <option value="0" selected>#Docs</option>
+					<option value="1">#Citations</option>
+                </select>
+            </form>
+            <div id="awesomeBarChart" style="width:800px;height:300px">
+            </div>
+            </div>
+        </div>
+            {% if rankings %}
+
+        <div class="row"><!-- style="width:300px"> -->
+           <div id="rankings">
+           <h4 style="float:left">Top Researchers</h4>
+            <form autocomplete="off" style="margin-left:5px;margin-top:10px;float:left">
+                <select name="rankAttr" id="rankAttr">
+                    <option value="3" selected>h-Index</option>
+					<option value="4">h-Index (2010)</option>
+					<option value="5">i-Index</option>
+					<option value="6">i-Index (2010)</option>
+					<option value="7">Documents</option>
+					<option value="8">Documents (2010)</option>
+					<option value="1">Cited</option>
+					<option value="2">Cited (2010)</option>
+                </select>
+            </form>
+           </div>
+           <table class="table table-striped">
+                <thead>
+                <thead>
+                    <th>Rank</th>
+                    <th>Name</th>
+                    <th>Value</th>
+                </tr>
+                </thead>
+                <tbody id="rankingsBody">
+                {% for ranking in rankings %}
+                <tr>
+                    <td>{{ loop.index }}</td>
+                    <td><a href="/researcher/{{ ranking.id }}"> {{ ranking.name }} </a></td>
+                    <td>{{ ranking.measure }}</td>
+                </tr>
+                {%  endfor %}
+               </tbody>
+           </table>
+        </div>
+        {% endif %}
+        </div>
+
+    </div>
+</div>
+{%- endblock %}
+
+{% block scripts -%}
+{{super()}}
+<script type="text/javascript">
+$(function(){
+    $('#rankAttr').selectmenu({change: function(event,ui) {
+        $.post("/getRankings/"+ui.item.value, {}, 'json').done(function (data) {
+            if (!data.error){
+                var tr='';
+                data.results.forEach(function(obj,i){
+                    tr+='<tr>';
+                    tr+='<td>' + (i+1) + '</td>';
+                    tr+= '<td><a href="/researcher/' + obj.id + '">'  + obj.name + '</a></td><td>' + obj.measure + '</td></tr>'
+                });
+                $('#rankingsBody').html(tr);
+            }
+        });
+    }});
+
+    new BarChart('#awesomeBarChart', 0);
+    $('#devType').selectmenu({change:function(event,ui){
+        $('#awesomeBarChart').data('obj').setDataIndex(parseInt(ui.item.value));
+    }});
+});
+/*
+    var data = [{'key': 'Max', values: [10, 50, 500, 50, 50, 50]}, {
+        'key': 'Avg',
+        data: [110, 302, 440, 4550, 34, 4]
+    }]
+
+    google.load("visualization", "1.1", {packages: ["bar"]});
+    google.setOnLoadCallback(drawChart);
+    function drawChart() {
+        var data = google.visualization.arrayToDataTable([
+            ['Person', 'h-index', 'wat-index', 'value-index'],
+            ['Max', 1000, 400, 200],
+            ['Avg', 1170, 460, 250]
+        ]);
+
+        var options = {
+            chart: {
+                title: 'Scientific Measurements',
+                subtitle: 'Citation indices',
+            },
+            bars: 'vertical' // Required for Material Bar Charts.
+        };
+
+        var chart = new google.charts.Bar(document.getElementById('barchart_material'));
+
+        chart.draw(data, options);
+    }*/
+</script>
+{% endblock %}

@@ -1,0 +1,97 @@
+<!-- extend base layout -->
+{% extends "base.html" %}
+
+{% block content %}
+
+    <div id="page-wrapper">
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-lg-12">
+                    <h1 class="page-header">{{ header }}</h1>
+                </div>
+                <!-- /.col-lg-12 -->
+            </div>
+            <!-- /.row -->
+            <div class="row">
+                {% if not results %}
+                    <div class="alert alert-danger" role="alert">
+                        <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
+                        <span class="sr-only">Error:</span>
+                        No authors could be found for field "{{ field_of_study }}".
+                    </div>
+                {% else %}
+                    <h2 class="sub-header">Authors --
+                        <mark>{{ field_of_study }}</mark>
+                    </h2>
+
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Fields of Study</th>
+                                <th>Cited</th>
+                                <th>Has Organization</th>
+                                <th>Measures</th>
+                                <th>Updated At</th>
+                                <th>Created At</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+
+                            {% for result in results %}
+                                <tr>
+                                    <td>{{ result.name }}</td>
+                                    <td>{{ result.fields_of_study }}</td>
+                                    <td>{{ result.cited }}</td>
+                                    <td>{{ result.hasCo }}</td>
+                                    <td>{{ result.measures }}</td>
+                                    <td>{{ result.updated_at }}</td>
+                                    <td>{{ result.created_at }}</td>
+                                </tr>
+                            {% endfor %}
+
+                            </tbody>
+                        </table>
+                    </div>
+
+                {% endif %}
+                <!-- AUTHORS TABLE -->
+            </div>
+        </div>
+        <!-- /.container-fluid -->
+    </div>
+    <!-- /#page-wrapper -->
+
+{% endblock %}
+
+{% block pagescript %}
+    <script type="text/javascript">
+        var data = [{'key': 'Max', values: [10, 50, 500, 50, 50, 50]}, {
+            'key': 'Avg',
+            data: [110, 302, 440, 4550, 34, 4]
+        }]
+
+        google.load("visualization", "1.1", {packages: ["bar"]});
+        google.setOnLoadCallback(drawChart);
+        function drawChart() {
+            var data = google.visualization.arrayToDataTable([
+                ['Person', 'h-index', 'wat-index', 'value-index'],
+                ['Max', 1000, 400, 200],
+                ['Avg', 1170, 460, 250]
+            ]);
+
+            var options = {
+                chart: {
+                    title: 'Scientific Measurements',
+                    subtitle: 'Citation indices',
+                },
+                bars: 'vertical' // Required for Material Bar Charts.
+            };
+
+            var chart = new google.charts.Bar(document.getElementById('barchart_material'));
+
+            chart.draw(data, options);
+        }
+    </script>
+{% endblock %}

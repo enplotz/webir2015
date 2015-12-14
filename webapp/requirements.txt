@@ -1,0 +1,10 @@
+flask>=0.10.1
+flask_debugtoolbar
+psycopg2
+sqlalchemy
+python-dotenv
+flask-bootstrap
+flask-nav
+flask-debug
+flask-cache
+Flask-SQLALchemy-Session
