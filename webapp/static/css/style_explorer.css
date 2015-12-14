@@ -12,11 +12,8 @@
     font-style: normal;
 }
 
-
-
-
-#wrapperOuter { 
-width:1200px;
+#wrapperOuter {
+    width:1200px;
 	height:550px;
 	position:relative;
 	left:50%;
@@ -36,7 +33,7 @@ width:1200px;
     -ms-user-select: none;
     user-select: none;
 }
-#wrapper { 
+#explorer-wrapper {
   float:left; 
   height:550px;
   width:calc(100% - 150px);
