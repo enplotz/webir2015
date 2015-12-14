@@ -169,7 +169,7 @@ var BarChart = function(pCanvas, pDataIndex){
         focusRects.attr('transform', function (d) {
             return 'translate(' + xScale(d.year) + ',0)';
         }).attr('width', function (d) {
-            return  (xScale(new Date(2015, 0, 1)) - xScale(new Date(2014, 0, 1)))*2;
+            return  (xScale(new Date(2015, 0, 1)) - xScale(new Date(2014, 0, 1)));
         });
 
         focusRects.transition().duration(700)
