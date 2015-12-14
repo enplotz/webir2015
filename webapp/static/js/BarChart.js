@@ -65,8 +65,7 @@ var BarChart = function(pCanvas, pDataIndex){
                 .attr('class', 'tooltip')
                 .offset([-10, 0])
                 .html(function (d) {
-                    console.log(d);
-                    return d.count;
+                    return 'Count: ' + d.count + '<br>Year: ' + d.year.getFullYear();
                 });
             svg.call(tooltip);
 			            svg.append('defs').append('svg:clipPath').attr('id', 'clip').append('rect').attr('width', width).attr('height', focusHeight);
@@ -101,6 +100,7 @@ var BarChart = function(pCanvas, pDataIndex){
              var extent = d3.extent(mainData[dataIndex], function(d){
                 return d.year;
             });
+			
             xScale = d3.time.scale().range([0, width]);
             x2Scale = d3.time.scale().domain(extent).range(xScale.range());
             xAxis = d3.svg.axis().scale(xScale).orient('bottom')
@@ -118,7 +118,7 @@ var BarChart = function(pCanvas, pDataIndex){
 
 
 
-            __setExtent(extent);
+            __setExtent([new Date(1960,0,1), extent[1]]);
 
 
 			 context.append('g')
