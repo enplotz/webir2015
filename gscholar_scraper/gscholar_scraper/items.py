@@ -78,7 +78,7 @@ class DocItem(GScholarItem):
 
     class Model(DeclarativeBase):
         __tablename__ = "documents"
-        author_id = Column(String)
+        author_id = Column(String, primary_key=True)
         title = Column(String)
         id = Column(String, primary_key=True)
         cite_count = Column(Integer, nullable=True)
