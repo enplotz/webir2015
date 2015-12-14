@@ -7,3 +7,4 @@ flask-bootstrap
 flask-nav
 flask-debug
 flask-cache
+Flask-SQLALchemy-Session

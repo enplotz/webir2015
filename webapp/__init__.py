@@ -2,18 +2,20 @@ from os import environ
 from os.path import join, dirname
 
 from dotenv import load_dotenv
-from flask import Blueprint, render_template, redirect, url_for,jsonify, request
-from flask import Flask
+from flask import Blueprint, render_template, redirect, url_for, request
+from flask import Flask, jsonify
+from flask.ext.cache import Cache
 from flask_bootstrap import Bootstrap
 from flask_debug import Debug
 from flask_debugtoolbar import DebugToolbarExtension
+from flask_sqlalchemy_session import flask_scoped_session
 from sqlalchemy import create_engine, String
 from sqlalchemy import func
 from sqlalchemy.dialects import postgresql
 from sqlalchemy.ext.automap import automap_base
 from sqlalchemy.orm import Session
+from sqlalchemy.orm import sessionmaker
 from sqlalchemy.sql.expression import cast
-from flask.ext.cache import Cache
 
 from queries.dashboard import avg_cite_sql,top_authors_m, time_series
 import queries.co_network as co
@@ -34,7 +36,6 @@ app.register_blueprint(frontend)
 Base = automap_base()
 engine = create_engine(app.config['SQL_ALCHEMY_DATABASE_URI'])
 Base.prepare(engine, reflect=True)
-session = Session(engine)
 
 # TODO make base classes use the correct engine
 # Currently, this uses sqlite o.O: `num_authors = Author.query.count()`
@@ -48,6 +49,8 @@ toolbar = DebugToolbarExtension(app)
 from flask.ext.sqlalchemy import _EngineDebuggingSignalEvents
 _EngineDebuggingSignalEvents(engine, app.import_name).register()
 
+session_factory = sessionmaker(bind=engine)
+session = flask_scoped_session(session_factory, app)
 
 # Cache for x seconds
 @cache.cached(timeout=60)
@@ -59,6 +62,9 @@ def get_metrics():
         'num_fields': session.query(Label).count(),
     }
 
+@app.route('/test', methods=['GET'])
+def test():
+    return render_template('pages/index.html')
 
 @app.route('/', methods=['GET'])
 def index():
@@ -82,9 +88,9 @@ def index():
 
     except Exception as e:
         errors.append(e)
-        return render_template('index.html', errors=errors, rankings=ranks, metrics=None)
+        return render_template('pages/index.html', errors=errors, rankings=ranks, metrics=None)
 
-    return render_template('index.html', errors=errors, rankings=ranks, metrics=metrics, num_authors=num_authors)
+    return render_template('pages/index.html', errors=errors, rankings=ranks, metrics=metrics, num_authors=num_authors)
 
 
 def field_term(search_term):
@@ -119,18 +125,20 @@ def search():
     errors = []
     if request.method == 'POST':
         search_term = request.form['entity_value']
-        # print(search_term)
         fos_search_term = field_term(search_term)
-        res = None
-        fields = None
+        print 'Getting %s' % fos_search_term
         try:
-            res = session.query(Author).filter(Author.name.like('%' + search_term + '%')).all()
+            authors = session.query(Author).filter(Author.name.like('%' + search_term + '%')).all()
             fields = session.query(Label).filter(Label.field_name.like('%' + fos_search_term + '%')).all()
-            return render_template('search_result.html', researchers=res, search_term=search_term,
-                               fos_search_term=fos_search_term, fields=fields)
+            return render_template('pages/search/result.html',
+                                   search_term=search_term,
+                                   fos_search_term=fos_search_term,
+                                   fields=fields,
+                                   researchers=authors
+                                   )
         except Exception as e:
             errors.append(e)
-    return render_template('search_entity.html', entity_name='Researcher or Field', action='/search', errors=errors)
+    return render_template('pages/search/entity.html', entity_name='Researcher or Field', action='/search', errors=errors)
 
 
 @app.route('/researcher', methods=['GET'])
@@ -147,9 +155,9 @@ def show_researcher_profile(id):
         pub = session.query(Document).filter(Document.author_id == id).all()
     except Exception as e:
         errors.append(e)
-        return render_template('researcher.html', errors=errors)
+        return render_template('pages/researcher.html', errors=errors)
 
-    return render_template('researcher.html', researcher=res, publications=pub)
+    return render_template('pages/researcher.html', researcher=res, publications=pub)
 
 
 @app.route('/researcher/<id>/fos/<field_name>')
@@ -159,12 +167,10 @@ def compare_researcher_fos(id, field_name):
     try:
         res = session.query(Author).get(id)
         avg = session.execute(avg_cite_sql([field_name])).fetchone()
-        # print(avg)
     except Exception as e:
         errors.append(e)
-        return render_template('compare.html', errors=errors)
-
-    return render_template('compare.html', researcher=res, avg=avg, field_name=field_name)
+        return render_template('pages/compare.html', errors=errors)
+    return render_template('pages/compare.html', researcher=res, avg=avg, field_name=field_name)
 
 
 def show_search_form(entity_name, action):
@@ -185,9 +191,15 @@ def show_field(field_name):
             Author.fields_of_study.contains(cast([field_name], postgresql.ARRAY(String)))).all()
     except Exception as e:
         errors.append(e)
-        return render_template('fos.html', errors=errors)
-    return render_template('fos.html', results=res, field_of_study=field_name)
+        return render_template('pages/fos.html', errors=errors)
+    return render_template('pages/fos.html', results=res, field_of_study=field_name)
 
+@app.teardown_request
+def teardown_request(exception):
+    if exception:
+        session.rollback()
+        session.remove()
+    session.remove()
 
 # co author networks:
 
