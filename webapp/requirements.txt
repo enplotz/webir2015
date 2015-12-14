@@ -3,7 +3,7 @@ flask_debugtoolbar
 psycopg2
 sqlalchemy
 python-dotenv
-flask-sqlalchemy
 flask-bootstrap
 flask-nav
 flask-debug
+flask-cache

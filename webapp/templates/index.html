@@ -27,48 +27,27 @@ intact. #}
     {%endif%}
     <div class="row">
 
-        <div class="col-sm-2 col-md-1 sidebar">
-            <ul class="nav nav-sidebar">
-                <!-- TODO active class via javascript? -->
-                <!--<li class="active"><a href="#">Overview <span class="sr-only">(current)</span></a></li>-->
-                <li class="active"><a href="#compare">Compare</a></li>
-                <li><a href="#explore">Explore</a></li>
-            </ul>
-            <!--<ul class="nav nav-sidebar">-->
-            <!--<li><a href="">Nav item</a></li>-->
-            <!--<li><a href="">Nav item again</a></li>-->
-            <!--<li><a href="">One more nav</a></li>-->
-            <!--<li><a href="">Another nav item</a></li>-->
-            <!--<li><a href="">More navigation</a></li>-->
-            <!--</ul>-->
-        </div>
+{#        <div class="col-sm-2 col-md-1 sidebar">#}
+{#            <ul class="nav nav-sidebar">#}
+{#                <!-- TODO active class via javascript? -->#}
+{#                <!--<li class="active"><a href="#">Overview <span class="sr-only">(current)</span></a></li>-->#}
+{#                <li class="active"><a href="#compare">Compare</a></li>#}
+{#                <li><a href="#explore">Explore</a></li>#}
+{#            </ul>#}
+{#            <!--<ul class="nav nav-sidebar">-->#}
+{#            <!--<li><a href="">Nav item</a></li>-->#}
+{#            <!--<li><a href="">Nav item again</a></li>-->#}
+{#            <!--<li><a href="">One more nav</a></li>-->#}
+{#            <!--<li><a href="">Another nav item</a></li>-->#}
+{#            <!--<li><a href="">More navigation</a></li>-->#}
+{#            <!--</ul>-->#}
+{#        </div>#}
 
-        <div class="col-sm-10 col-sm-offset-2 col-md-11 col-md-offset-1 main">
-
-            <div class="row placeholders">
-            <div class="col-xs-6 col-sm-3 placeholder">
-            <img src="data:image/gif;base64,R0lGODlhAQABAIAAAHd3dwAAACH5BAAAAAAALAAAAAABAAEAAAICRAEAOw=="
-            width="200" height="200" class="img-responsive" alt="Generic placeholder thumbnail">
-            <h4>Label</h4>
-            <span class="text-muted">Something else</span>
-            </div>
-            <div class="col-xs-6 col-sm-3 placeholder">
-            <img src="data:image/gif;base64,R0lGODlhAQABAIAAAHd3dwAAACH5BAAAAAAALAAAAAABAAEAAAICRAEAOw=="
-            width="200" height="200" class="img-responsive" alt="Generic placeholder thumbnail">
-            <h4>Label</h4>
-            <span class="text-muted">Something else</span>
-            </div>
-            <div class="col-xs-6 col-sm-3 placeholder">
-            <img src="data:image/gif;base64,R0lGODlhAQABAIAAAHd3dwAAACH5BAAAAAAALAAAAAABAAEAAAICRAEAOw=="
-            width="200" height="200" class="img-responsive" alt="Generic placeholder thumbnail">
-            <h4>Label</h4>
-            <span class="text-muted">Something else</span>
-            </div>
-            <div class="col-xs-6 col-sm-3 placeholder">
-            <img src="data:image/gif;base64,R0lGODlhAQABAIAAAHd3dwAAACH5BAAAAAAALAAAAAABAAEAAAICRAEAOw=="
-            width="200" height="200" class="img-responsive" alt="Generic placeholder thumbnail">
-            <h4>Label</h4>
-            <span class="text-muted">Something else</span>
+        <div class="col-sm-12 col-md-12 main">
+            <div class="row">
+            <div class="col-lg-12">
+                <p>Hello there. We currently have <mark>{{ metrics.num_documents }} documents</mark>, <mark>{{ num_authors }} authors</mark> and
+                    <mark>{{ metrics.num_fields }} fields of studies</mark> indexed. For <mark>{{ metrics.num_authors_fully }} authors</mark> there exist detailed metrics.</p>
             </div>
             </div>
         <div class="row" style="height:400px;">
@@ -86,7 +65,7 @@ intact. #}
         </div>
             {% if rankings %}
 
-        <div class="row" style="width:300px">
+        <div class="row"><!-- style="width:300px"> -->
            <div id="rankings">
            <h4 style="float:left">Top Researchers</h4>
             <form autocomplete="off" style="margin-left:5px;margin-top:10px;float:left">
@@ -94,11 +73,11 @@ intact. #}
                     <option value="3" selected>h-Index</option>
 					<option value="4">h-Index (2010)</option>
 					<option value="5">i-Index</option>
-					<option value="6">i-Index(2010)</option>
+					<option value="6">i-Index (2010)</option>
 					<option value="7">Documents</option>
-					<option value="8">Documents(2010)</option>
+					<option value="8">Documents (2010)</option>
 					<option value="1">Cited</option>
-					<option value="2">Cited(2010)</option>
+					<option value="2">Cited (2010)</option>
                 </select>
             </form>
            </div>
