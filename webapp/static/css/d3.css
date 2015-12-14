@@ -101,3 +101,13 @@ font-size:12px;
     top: 100%;
     left: 0;
 }
+.axis3 path,
+.axis3 line {
+    fill: none;
+    stroke: black;
+    shape-rendering: geometricPrecision;
+}
+.blabel {
+    fill: black;
+    font-size: 0.7em;
+}
