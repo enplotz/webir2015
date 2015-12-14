@@ -7,13 +7,19 @@
         <div class="container-fluid">
             <div class="row">
                 <div class="col-lg-12">
-                    <h1 class="page-header">{{ header }}</h1>
+                    <h1 class="page-header">{{ header }} <small>
+                        <button title="Refresh Data (future feature)"
+                                type="button"
+                                class="btn btn-mini disabled refresh-data"
+                                data-placement="bottom"
+                                ><i class="ui-icon-refresh"></i>Last updated: {{ researcher.updated_at.strftime('%H:%M / %d-%m-%Y') }}</button>
+                    </small></h1>
                 </div>
                 <!-- /.col-lg-12 -->
             </div>
             {% if errors %}
                 <div class="row">
-                    <div class="col-sm-12">
+                    <div class="col-lg-12">
                         {% for error in errors %}
                             <div class="alert alert-danger" role="alert">
                                 <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
@@ -27,10 +33,10 @@
             <div class="row">
                 {% if researcher %}
                     <div class="row">
-                        <div class="col-sm-3 col-md-3">
+                        <div class="col-lg-3">
                             <div class="thumbnail">
                                 <img src="https://scholar.google.de/citations?view_op=view_photo&user={{ researcher.id }}&citpid=2"
-                                     alt="..." width="150px" height="150px">
+                                     alt="Profile picture of {{ researcher.name }}." width="150px" height="150px">
 
                                 <div class="caption">
                                     <h3>
@@ -38,7 +44,7 @@
                                     </h3>
 
                                     <p> <!-- 'if' required for some reason...-->
-                                        {% if researcher.fields|length > 0 %}
+                                        {% if researcher.fields_of_study|length > 0 %}
                                             {% for field in researcher.fields_of_study %}
                                                 <span><a href="/fos/{{ field }}">{{ field }}</a> (<a
                                                         href="/researcher/{{ researcher.id }}/fos/{{ field }}">compare</a>)</span>
@@ -48,7 +54,7 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="table-responsive col-sm-3 col-md-3">
+                        <div class="table-responsive col-lg-3">
                             {% if not researcher.measures %}
                                 <div class="alert alert-info" role="alert">
                                     <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
@@ -278,7 +284,8 @@
                         });
                     }
                 }
-            }
+            };
+{#            $('.refresh-data').tooltip();#}
         });
     </script>
 {% endblock %}

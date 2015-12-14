@@ -17,7 +17,7 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy.sql.expression import cast
 
 import queries.co_network as co
-from queries.dashboard import avg_cite_sql,top_authors_m, time_series
+from queries.dashboard import avg_measures_sql,top_authors_m, time_series
 
 dotenv_path = join(dirname(__file__), '.env')
 load_dotenv(dotenv_path)
@@ -177,11 +177,15 @@ def compare_researcher_fos(id, field_name):
     results = {}
     try:
         res = session.query(Author).get(id)
-        avg = session.execute(avg_cite_sql([field_name])).fetchone()
+        print res
+        avg = session.execute(avg_measures_sql([field_name])).fetchone()
+        print avg
+        return render_template('pages/compare.html', researcher=res, avg=avg, field_name=field_name)
     except Exception as e:
         errors.append(e)
-        return render_template('pages/compare.html', errors=errors)
-    return render_template('pages/compare.html', researcher=res, avg=avg, field_name=field_name)
+        print e
+    return render_template('pages/compare.html', errors=errors)
+
 
 
 @app.route('/fields', methods=['GET'])

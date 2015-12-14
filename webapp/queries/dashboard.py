@@ -18,17 +18,14 @@ def time_series(cited):
     else:
         return 'SELECT year, COUNT(*) FROM documents d WHERE year IS NOT NULL GROUP BY year ORDER BY year'
 
-def avg_cite_sql(fields):
-    sql = 'WITH ' + \
-          'sub_authors AS ( ' + \
-          'SELECT * FROM authors WHERE fields_of_study @> ARRAY[' + \
-          ', '.join(map(lambda f: '\'{}\''.format(f), fields)) + \
-          ']::varchar[] AND cited IS NOT NULL AND measures IS NOT NULL' + \
-          '  ),' + \
-          '    unnested AS (' + \
-          '      SELECT id, generate_series(1, 6), unnest(measures) FROM sub_authors),' + \
-          '    t1 AS (' + \
-          '      SELECT generate_series, avg(unnest) AS average, NULL as avg_cited FROM unnested GROUP BY generate_series ORDER BY generate_series),' + \
-          '  t2 as (SELECT NULL::numeric[] as array_agg , avg(cited) as avg_cited FROM sub_authors GROUP BY sub_authors.fields_of_study)' + \
-          'SELECT array_agg(average) as avg_measures, min(t2.avg_cited) as avg_cited FROM t1, t2;'
+
+def avg_measures_sql(fields):
+    sql = 'WITH ' \
+        'sub_authors AS ( SELECT * FROM authors WHERE fields_of_study @> ARRAY['  + \
+        ', '.join(map(lambda f: '\'{}\''.format(f), fields)) + \
+        ']::varchar[] AND cited IS NOT NULL AND measures IS NOT NULL  ), ' \
+        'unnested AS ( SELECT id, generate_series(1, 6), unnest(measures) FROM sub_authors), ' \
+        't1 AS (SELECT generate_series, avg(unnest) AS average FROM unnested ' \
+        'GROUP BY generate_series ORDER BY generate_series)' \
+        'SELECT array_agg(average) as avg_measures FROM t1; '
     return sql
