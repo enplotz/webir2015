@@ -10,7 +10,7 @@ load_dotenv(dotenv_path)
 class Config(object):
     DEBUG = False
     CSRF_ENABLED = True
-    SECRET_KEY = 'change_this'
+    SECRET_KEY = 'change_this_in_env_file'
 
     DATABASE = {
         'drivername' : 'postgres',
@@ -27,3 +27,7 @@ class Config(object):
 class DevelopmentConfig(Config):
     DEBUG = True
     DEBUG_TB_INTERCEPT_REDIRECTS = False
+
+class ProductionConfig(Config):
+    DEBUG_TB_INTERCEPT_REDIRECTS = False
+    SECRET_KEY = environ["SECRET_KEY"]
