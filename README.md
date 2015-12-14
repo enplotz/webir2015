@@ -14,7 +14,7 @@ Annotated directory structure and useful files:
 ├── gscholar_scraper            -- scraper project root
 │   ├── README.md               -- more information on the scraper
 │   ├── gscholar_scraper        -- scraper implementation
-│   │   ├── models
+│   │   ├── models.py
 │   │   ├── ...
 │   │   ├── settings.py
 │   │   ├── spiders
@@ -76,4 +76,8 @@ If you are running the webapp in production, be sure to set the env key `SECRET_
 
 The webapp can be started via `cd webapp && python __init__.py` and normally accessed via `http://localhost:5000`.
 
+# Authors
+
+- Philipp Meschenmoser
+- Manuel Hotz
 
