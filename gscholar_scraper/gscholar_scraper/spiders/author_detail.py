@@ -10,7 +10,7 @@ from sqlalchemy.orm import sessionmaker
 
 import gscholar_scraper.utils as utils
 from gscholar_scraper.items import AuthorItem, DocItem, CoAuthorItem
-from models import db_connect, windowed_query
+from gscholar_scraper.models import db_connect, windowed_query
 from scrapy.exceptions import NotSupported
 
 
@@ -100,9 +100,9 @@ class AuthorDetails(scrapy.Spider):
             item = ItemLoader(item=authorItem, response=response)
             # Update fields (if author was not crawled already, this fills the 'required' fields)
             item.add_xpath('name', '//*[@id="gsc_prf_in"]/text()')
-            # TODO cited (first field of measures)
+            # cited (first field of measures)
             item.add_xpath('cited', '//*[@id="gsc_rsb_st"]/tbody/tr[2]/td[2]')
-            # TODO fos
+            # fos
             urls = response.xpath('//*[@id="gsc_prf_i"]/div/a[@class="gsc_prf_ila"]/@href').extract()
             labels = [urlparse.parse_qs(urlparse.urlparse(url).query)['mauthors'][0].split(':')[1]
                       for url in urls]

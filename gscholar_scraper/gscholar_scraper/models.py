@@ -1,10 +1,11 @@
+import sqlalchemy
+from sqlalchemy import and_, func
 from sqlalchemy import create_engine, Column, TIMESTAMP
-from sqlalchemy.ext.declarative import declarative_base, declared_attr
 from sqlalchemy.engine.url import URL
-from sqlalchemy import func
+from sqlalchemy.ext.declarative import declarative_base, declared_attr
 
 import settings
-
+import gscholar_scraper.settings
 
 class TimestampedBase(object):
     @declared_attr
@@ -29,8 +30,6 @@ def create_authors_table(engine):
 
 
 # Window approach from https://bitbucket.org/zzzeek/sqlalchemy/wiki/UsageRecipes/WindowedRangeQuery
-import sqlalchemy
-from sqlalchemy import and_, func
 
 def column_windows(session, column, windowsize):
     """Return a series of WHERE clauses against
@@ -84,35 +83,3 @@ def windowed_query(q, column, windowsize, asc=True):
                                         column, windowsize):
         for row in q.filter(whereclause).order_by(column if asc else column.desc()):
             yield row
-
-if __name__ == '__main__':
-    from sqlalchemy import Column, Integer, create_engine
-    from sqlalchemy.orm import Session
-    from sqlalchemy.ext.declarative import declarative_base
-    import random
-
-    Base = declarative_base()
-
-    class Widget(Base):
-        __tablename__ = 'widget'
-        id = Column(Integer, primary_key=True)
-        data = Column(Integer)
-
-    e = create_engine('postgresql://scott:tiger@localhost/test', echo='debug')
-
-    Base.metadata.drop_all(e)
-    Base.metadata.create_all(e)
-
-    # get some random list of unique values
-    data = set([random.randint(1, 1000000) for i in xrange(10000)])
-
-    s = Session(e)
-    s.add_all([Widget(id=i, data=j) for i, j in enumerate(data)])
-    s.commit()
-
-    q = s.query(Widget)
-
-    for widget in windowed_query(q, Widget.data, 1000):
-        print "data:", widget.data
-
-

@@ -8,12 +8,15 @@
             <div class="row">
                 <div class="col-lg-12">
                     <h1 class="page-header">{{ header }} <small>
+                        {% if researcher %}
                         <button title="Refresh Data (future feature)"
                                 type="button"
                                 class="btn btn-mini disabled refresh-data"
                                 data-placement="bottom"
                                 ><i class="ui-icon-refresh"></i>Last updated: {{ researcher.updated_at.strftime('%H:%M / %d-%m-%Y') }}</button>
-                    </small></h1>
+                    </small>
+                        {% endif %}
+                    </h1>
                 </div>
                 <!-- /.col-lg-12 -->
             </div>

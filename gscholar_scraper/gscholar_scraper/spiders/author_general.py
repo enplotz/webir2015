@@ -4,7 +4,7 @@ from gscholar_scraper.items import FOSItem, AuthorItem
 from scrapy.http import Request
 from scrapy.loader import ItemLoader
 import gscholar_scraper.utils as utils
-from models import db_connect, windowed_query, column_windows
+from gscholar_scraper.models import db_connect, windowed_query, column_windows
 from sqlalchemy.orm import sessionmaker
 import random
 import urllib2

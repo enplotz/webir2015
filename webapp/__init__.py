@@ -3,7 +3,7 @@ from os.path import join, dirname
 
 from dotenv import load_dotenv
 from flask import Blueprint, render_template, redirect, url_for, request
-from flask import Flask, jsonify
+from flask import Flask, jsonify, abort
 from flask.ext.cache import Cache
 from flask_bootstrap import Bootstrap
 from flask_debug import Debug
@@ -62,6 +62,9 @@ def get_metrics():
         'num_fields': session.query(Label).count(),
     }
 
+# @app.errorhandler(404)
+# def page_not_found(e):
+#     return render_template('pages/404.html'), 404
 
 @app.route('/', methods=['GET'])
 def index():
@@ -81,12 +84,9 @@ def index():
         series_cites = session.execute(time_series(True))
         metrics = get_metrics()
         num_authors = session.query(func.count(Author.id)).scalar()
-        print("Num authors %d " % num_authors)
-
     except Exception as e:
         errors.append(e)
         return render_template('pages/index.html', errors=errors, rankings=ranks, metrics=None)
-
     return render_template('pages/index.html', errors=errors, rankings=ranks, metrics=metrics, num_authors=num_authors)
 
 
@@ -164,6 +164,9 @@ def show_researcher_profile(id):
         res = session.query(Author).get(id)
         pub = session.query(Document).filter(Document.author_id == id).all()
         print 'Num Publications: %d' % len(pub)
+        print 'Researcher: %s' % res.id if res else None
+        if not res:
+            abort(404)
     except Exception as e:
         errors.append(e)
         return render_template('pages/researcher.html', errors=errors, researcher=None, header="Researcher Profile")
@@ -176,15 +179,16 @@ def compare_researcher_fos(id, field_name):
     errors = []
     results = {}
     try:
+        print field_name
         res = session.query(Author).get(id)
-        print res
+        print "Researcher %s" % res.name if res else None
         avg = session.execute(avg_measures_sql([field_name])).fetchone()
-        print avg
-        return render_template('pages/compare.html', researcher=res, avg=avg, field_name=field_name)
+        print "Avg: %s " % avg
+        return render_template('pages/compare.html', errors=errors, researcher=res, avg=avg, field_name=field_name)
     except Exception as e:
         errors.append(e)
         print e
-    return render_template('pages/compare.html', errors=errors)
+    return render_template('pages/compare.html', errors=errors, field_name=field_name)
 
 
 

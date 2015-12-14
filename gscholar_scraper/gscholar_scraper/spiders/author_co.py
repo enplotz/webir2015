@@ -1,13 +1,13 @@
-import scrapy
 import re
-from gscholar_scraper.items import FOSItem, AuthorItem, CoAuthorItem
+import urllib2
+
+import scrapy
 from scrapy.http import Request
 from scrapy.loader import ItemLoader
-import gscholar_scraper.utils as utils
-from models import db_connect, windowed_query, column_windows
 from sqlalchemy.orm import sessionmaker
-import random
-import urllib2
+
+from gscholar_scraper.items import AuthorItem, CoAuthorItem
+from gscholar_scraper.models import db_connect, windowed_query
 
 
 def all_fields():

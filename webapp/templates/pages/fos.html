@@ -20,12 +20,12 @@
                         No authors could be found for field "{{ field_of_study }}".
                     </div>
                 {% else %}
-                    <h2 class="sub-header">Authors --
+                    <h2 class="sub-header">Listing Authors in
                         <mark>{{ field_of_study }}</mark>
                     </h2>
 
                     <div class="table-responsive">
-                        <table class="table table-striped">
+                        <table class="table table-striped" id="dataTable">
                             <thead>
                             <tr>
                                 <th>Name</th>
@@ -33,21 +33,27 @@
                                 <th>Cited</th>
                                 <th>Has Organization</th>
                                 <th>Measures</th>
-                                <th>Updated At</th>
-                                <th>Created At</th>
+{#                                <th>Updated At</th>#}
+{#                                <th>Created At</th>#}
                             </tr>
                             </thead>
                             <tbody>
 
                             {% for result in results %}
                                 <tr>
-                                    <td>{{ result.name }}</td>
-                                    <td>{{ result.fields_of_study }}</td>
+                                    <td><a href="/researcher/{{ result.id }}">{{ result.name }}</a></td>
+                                    <td>
+                                    {% if result.fields_of_study %}
+                                        {% for f in result.fields_of_study %}
+                                            <a href="/fos/{{ f }}">{{ f }}</a>
+                                        {% endfor %}
+                                    {% endif %}
+                                    </td>
                                     <td>{{ result.cited }}</td>
                                     <td>{{ result.hasCo }}</td>
                                     <td>{{ result.measures }}</td>
-                                    <td>{{ result.updated_at }}</td>
-                                    <td>{{ result.created_at }}</td>
+{#                                    <td>{{ result.updated_at }}</td>#}
+{#                                    <td>{{ result.created_at }}</td>#}
                                 </tr>
                             {% endfor %}
 
@@ -67,31 +73,8 @@
 
 {% block pagescript %}
     <script type="text/javascript">
-        var data = [{'key': 'Max', values: [10, 50, 500, 50, 50, 50]}, {
-            'key': 'Avg',
-            data: [110, 302, 440, 4550, 34, 4]
-        }]
-
-        google.load("visualization", "1.1", {packages: ["bar"]});
-        google.setOnLoadCallback(drawChart);
-        function drawChart() {
-            var data = google.visualization.arrayToDataTable([
-                ['Person', 'h-index', 'wat-index', 'value-index'],
-                ['Max', 1000, 400, 200],
-                ['Avg', 1170, 460, 250]
-            ]);
-
-            var options = {
-                chart: {
-                    title: 'Scientific Measurements',
-                    subtitle: 'Citation indices',
-                },
-                bars: 'vertical' // Required for Material Bar Charts.
-            };
-
-            var chart = new google.charts.Bar(document.getElementById('barchart_material'));
-
-            chart.draw(data, options);
-        }
+        $(function () {
+            $('#dataTable').DataTable();
+        });
     </script>
 {% endblock %}

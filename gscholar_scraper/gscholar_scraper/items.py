@@ -5,12 +5,14 @@
 # See documentation in:
 # http://doc.scrapy.org/en/latest/topics/items.html
 import re
-import scrapy
 import urllib2
-from scrapy.loader.processors import TakeFirst, MapCompose, Join, Compose
-from models import DeclarativeBase
-from sqlalchemy import create_engine, Column, Integer, String, Boolean
+
+import scrapy
+from scrapy.loader.processors import TakeFirst, MapCompose
+from sqlalchemy import Column, Integer, String, Boolean
 from sqlalchemy.dialects import postgresql
+
+from gscholar_scraper.models import DeclarativeBase
 
 
 class GScholarItem(scrapy.Item):
