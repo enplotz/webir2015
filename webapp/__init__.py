@@ -13,12 +13,11 @@ from sqlalchemy import create_engine, String
 from sqlalchemy import func
 from sqlalchemy.dialects import postgresql
 from sqlalchemy.ext.automap import automap_base
-from sqlalchemy.orm import Session
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.sql.expression import cast
 
-from queries.dashboard import avg_cite_sql,top_authors_m, time_series
 import queries.co_network as co
+from queries.dashboard import avg_cite_sql,top_authors_m, time_series
 
 dotenv_path = join(dirname(__file__), '.env')
 load_dotenv(dotenv_path)
@@ -52,6 +51,7 @@ _EngineDebuggingSignalEvents(engine, app.import_name).register()
 session_factory = sessionmaker(bind=engine)
 session = flask_scoped_session(session_factory, app)
 
+
 # Cache for x seconds
 @cache.cached(timeout=60)
 def get_metrics():
@@ -62,9 +62,6 @@ def get_metrics():
         'num_fields': session.query(Label).count(),
     }
 
-@app.route('/test', methods=['GET'])
-def test():
-    return render_template('pages/index.html')
 
 @app.route('/', methods=['GET'])
 def index():
@@ -96,6 +93,7 @@ def index():
 def field_term(search_term):
     return '_'.join(search_term.lower().split(' '))
 
+
 @app.route('/getRankings/<m>', methods=['GET', 'POST'])
 def getRankings(m):
     errors = []
@@ -105,6 +103,7 @@ def getRankings(m):
     except Exception as e:
         errors.append(e)
     return jsonify(results = [dict(row) for row in result], errors =errors)
+
 
 @app.route('/getTimeSeries', methods=['GET','POST'])
 def getTimeSeries():
@@ -141,6 +140,17 @@ def search():
     return render_template('pages/search/entity.html', entity_name='Researcher or Field', action='/search', errors=errors)
 
 
+@app.route('/researchers', methods=['GET'])
+def researchers():
+    errors = []
+    try:
+        res = session.query(Author).all()
+        return render_template('pages/researchers.html', researchers=res)
+    except Exception as e:
+        errors.append(e)
+    return render_template('pages/researchers.html', errors=errors)
+
+
 @app.route('/researcher', methods=['GET'])
 def find_researcher():
     return redirect(url_for('search'), 302)
@@ -153,11 +163,12 @@ def show_researcher_profile(id):
     try:
         res = session.query(Author).get(id)
         pub = session.query(Document).filter(Document.author_id == id).all()
+        print 'Num Publications: %d' % len(pub)
     except Exception as e:
         errors.append(e)
-        return render_template('pages/researcher.html', errors=errors)
+        return render_template('pages/researcher.html', errors=errors, researcher=None, header="Researcher Profile")
 
-    return render_template('pages/researcher.html', researcher=res, publications=pub)
+    return render_template('pages/researcher.html', researcher=res, publications=pub, header="Researcher Profile")
 
 
 @app.route('/researcher/<id>/fos/<field_name>')
@@ -173,8 +184,16 @@ def compare_researcher_fos(id, field_name):
     return render_template('pages/compare.html', researcher=res, avg=avg, field_name=field_name)
 
 
-def show_search_form(entity_name, action):
-    return render_template('search_entity.html', entity_name=entity_name, action=action)
+@app.route('/fields', methods=['GET'])
+def fields():
+    errors = []
+    try:
+        res = session.query(Label).all()
+        return render_template('pages/fields.html', fields=res)
+    except Exception as e:
+        errors.append(e)
+        print e
+    return render_template('pages/fields.html', errors=errors)
 
 
 @app.route('/fos', methods=['POST', 'GET'])
@@ -193,6 +212,19 @@ def show_field(field_name):
         errors.append(e)
         return render_template('pages/fos.html', errors=errors)
     return render_template('pages/fos.html', results=res, field_of_study=field_name)
+
+
+@app.route('/documents', methods=['GET'])
+def documents():
+    errors = []
+    try:
+        res = session.query(Document).all()
+        return render_template('pages/documents.html', documents=res)
+    except Exception as e:
+        errors.append(e)
+        print e
+    return render_template('pages/documents.html', errors=errors)
+
 
 @app.teardown_request
 def teardown_request(exception):
@@ -215,6 +247,7 @@ def getEntityById(i):
         errors.append(e)
     return jsonify(results = results, errors =errors)
 
+
 @app.route('/co/getExtended',  methods=['POST', 'GET'])
 def getExtended():
     errors = []
@@ -232,6 +265,7 @@ def getExtended():
     except Exception as e:
         errors.append(e)
     return jsonify(results = results, errors =errors)
+
 
 if __name__ == '__main__':
     # print(environ['APP_SETTINGS'])

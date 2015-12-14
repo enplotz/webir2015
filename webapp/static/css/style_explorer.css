@@ -15,10 +15,10 @@
 #wrapperOuter {
     width:1200px;
 	height:550px;
-	position:relative;
-	left:50%;
-	top:50%;
-	margin:-275px 0 0 -600px;
+	/*position:relative;*/
+	/*left:50%;*/
+	/*top:50%;*/
+	/*margin:-275px 0 0 -600px;*/
     -webkit-background-size: cover;
     -moz-background-size: cover;
     -o-background-size: cover;

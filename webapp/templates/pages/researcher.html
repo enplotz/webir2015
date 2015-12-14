@@ -11,10 +11,21 @@
                 </div>
                 <!-- /.col-lg-12 -->
             </div>
+            {% if errors %}
+                <div class="row">
+                    <div class="col-sm-12">
+                        {% for error in errors %}
+                            <div class="alert alert-danger" role="alert">
+                                <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
+                                <span class="sr-only">Error:</span>
+                                {{ error }}
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            {% endif %}
             <div class="row">
                 {% if researcher %}
-                    <h1>Researcher Profile</h1>
-
                     <div class="row">
                         <div class="col-sm-3 col-md-3">
                             <div class="thumbnail">
@@ -239,7 +250,7 @@
                 }
 
                 function __initiateGraph() {
-                    __cont = new Container('#wrapper', 'author', 1, function (obj) {
+                    __cont = new Container('#explorer-wrapper', 'author', 1, function (obj) {
                         getExtended(obj, function (newNodes) {
                             __cont.addNodes(newNodes, obj.clicked);
                         });
@@ -261,7 +272,7 @@
                             clicked: obj.clicked,
                             limit: $('#spinner').spinner('value')
                         }, 'json').done(function (data) {
-                            if (!data.error){
+                            if (!data.error) {
                                 cb(data.results)
                             }
                         });
