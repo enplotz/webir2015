@@ -1,8 +1,9 @@
 from os import environ
 from os.path import join, dirname
 
+import requests
 from dotenv import load_dotenv
-from flask import Blueprint, render_template, redirect, url_for, request
+from flask import Blueprint, render_template, redirect, url_for, request, Response
 from flask import Flask, jsonify, abort
 from flask.ext.cache import Cache
 from flask_bootstrap import Bootstrap
@@ -274,6 +275,22 @@ def getExtended():
         errors.append(e)
     return jsonify(results = results, errors =errors)
 
+
+@app.route('/schedule', methods=['POST'])
+def schedule_spider():
+    # project
+    project = request.form['project']
+    # get spider name
+    spider_name = request.form['spider']
+    # and start_author for test for now
+    start_authors = request.form['start_authors']
+    r = requests.post('http://localhost:6800/schedule.json',
+                      data={'project': project, 'spider': spider_name, 'start_authors': start_authors})
+    return Response(
+            r.text,
+            status=r.status_code,
+            content_type=r.headers['content-type']
+    )
 
 if __name__ == '__main__':
     # print(environ['APP_SETTINGS'])

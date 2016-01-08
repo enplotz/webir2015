@@ -67,3 +67,5 @@ target/
 
 # Ignore spider state directory
 crawls/
+# Ignore scraped items flat files 
+gscholar_scraper/items/
