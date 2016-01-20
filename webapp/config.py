@@ -1,6 +1,7 @@
-from os.path import join, dirname
-from dotenv import load_dotenv
 from os import environ
+from os.path import join, dirname
+
+from dotenv import load_dotenv
 from sqlalchemy.engine.url import URL
 
 dotenv_path = join(dirname(__file__), '.env')

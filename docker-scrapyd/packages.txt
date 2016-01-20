@@ -1,0 +1,2 @@
+python-dev libpq-dev python-psycopg2
+

@@ -1,16 +1,19 @@
-import scrapy
-import re
-from gscholar_scraper.items import FOSItem, AuthorItem
-from scrapy.http import Request
-from scrapy.loader import ItemLoader
-import gscholar_scraper.utils as utils
-from gscholar_scraper.models import db_connect, windowed_query, column_windows
-from sqlalchemy.orm import sessionmaker
 import random
+import re
 import urllib2
 import urlparse
 
-class AuthorGeneral(scrapy.Spider):
+from scrapy.http import Request
+from scrapy.loader import ItemLoader
+from sqlalchemy.orm import sessionmaker
+
+import gscholar_scraper.utils as utils
+from gscholar_scraper.items import FOSItem, AuthorItem
+from gscholar_scraper.models import windowed_query
+from gscholar_scraper.spiders.base import DBConnectedSpider
+
+
+class AuthorGeneral(DBConnectedSpider):
     name = "author_general"
     handle_httpstatus_list = [200, 302, 400, 402, 503]
 
@@ -18,8 +21,7 @@ class AuthorGeneral(scrapy.Spider):
     pattern = 'https://scholar.google.de/citations?view_op=search_authors&hl=de&mauthors=label:{0}'
 
     def next_window(self):
-        engine = db_connect()
-        session = sessionmaker(bind=engine)()
+        session = self.create_session()
         window_size = 1000
         start_row = self.state.get('start_row', 0)
         ffwd = True

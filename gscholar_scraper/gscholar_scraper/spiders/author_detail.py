@@ -3,48 +3,51 @@ import re
 import urlparse
 
 import scrapy
+from scrapy.exceptions import NotSupported
 from scrapy.http import Request
 from scrapy.loader import ItemLoader
 from sqlalchemy import or_
-from sqlalchemy.orm import sessionmaker
 
 import gscholar_scraper.utils as utils
 from gscholar_scraper.items import AuthorItem, DocItem, CoAuthorItem
-from gscholar_scraper.models import db_connect, windowed_query
-from scrapy.exceptions import NotSupported
+from gscholar_scraper.models import windowed_query
+from gscholar_scraper.spiders.base import DBConnectedSpider
 
+# TODO figure out how start_authors for post request to spider...
 
-def missing_authors():
-    engine = db_connect()
-    session = sessionmaker(bind=engine)()
-
-    try:
-        q = session.query(AuthorItem.Model).filter(or_(AuthorItem.Model.measures == None, AuthorItem.Model.org == None, AuthorItem.Model.hasCo == None))
-        for window in windowed_query(q, AuthorItem.Model.id, 1000):
-            yield window
-    finally:
-        session.close()
-
-
-class AuthorDetails(scrapy.Spider):
+class AuthorDetails(DBConnectedSpider):
     """ Spider that crawls the profile page of a single author for all details. It either fetches the list of already
     crawled authors (for which details are still missing) or uses the parameter `start_authors` to start with specific
     authors.
     """
     name = "author_detail"
-    handle_httpstatus_list = [200, 302, 400, 402, 503]
+    # handle_httpstatus_list = [200, 302, 400, 402, 503]
 
     pattern = 'https://scholar.google.de/citations?hl=de&user={0}&cstart=0&pagesize=100'
 
-    def __init__(self, *args, **kwargs):
-        self.start_urls = [self.pattern.format(id) for id in kwargs.get('start_authors').split(',')]
+    def missing_authors(self):
+        session = self.create_session()
+
+        try:
+            q = session.query(AuthorItem.Model).filter(or_(AuthorItem.Model.measures == None,
+                                                           AuthorItem.Model.org == None,
+                                                           AuthorItem.Model.hasCo == None))
+            for window in windowed_query(q, AuthorItem.Model.id, 1000):
+                yield window
+        finally:
+            session.close()
+
+    def __init__(self, start_authors=None, *args, **kwargs):
+        if start_authors:
+            self.logger.info('Starting with given authors: %s' % start_authors)
+            self.start_urls = [self.pattern.format(id) for id in start_authors.split(',')]
         super(self.__class__, self).__init__(*args, **kwargs)
 
         # Scrape only the given authors
         self.scrape_given = len(self.start_urls) > 0
 
 
-        self.missing_authors = missing_authors()
+        self.missing_authors = self.missing_authors()
         # author profiles with cstart and pagesize parameters
         self.container = []
 

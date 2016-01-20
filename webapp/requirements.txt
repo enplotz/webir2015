@@ -4,8 +4,10 @@ psycopg2
 sqlalchemy
 python-dotenv
 flask-bootstrap
+flask-sqlalchemy
 flask-nav
 flask-debug
 flask-cache
 Flask-SQLALchemy-Session
 requests
+gunicorn

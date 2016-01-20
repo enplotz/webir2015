@@ -1,36 +1,34 @@
 import re
 import urllib2
 
-import scrapy
 from scrapy.http import Request
 from scrapy.loader import ItemLoader
-from sqlalchemy.orm import sessionmaker
 
 from gscholar_scraper.items import AuthorItem, CoAuthorItem
-from gscholar_scraper.models import db_connect, windowed_query
+from gscholar_scraper.models import windowed_query
+from gscholar_scraper.spiders.base import DBConnectedSpider
 
 
-def all_fields():
-    engine = db_connect()
-    session = sessionmaker(bind=engine)()
-    try:
-        # to do: only get unprocessed author ids
-        for window in windowed_query(session.query(AuthorItem.Model).filter(AuthorItem.Model.hasCo == True), AuthorItem.Model.id, 1000):
-            yield window
-    finally:
-        session.close()
-
-class AuthorCo(scrapy.Spider):
+class AuthorCo(DBConnectedSpider):
     name = "author_co"
     handle_httpstatus_list = [200, 302, 400, 402, 503]
 
     pattern = 'https://scholar.google.de/citations?view_op=list_colleagues&hl=de&user={0}'
 
+    def all_fields(self):
+        session = self.create_session()
+        try:
+            # to do: only get unprocessed author ids
+            for window in windowed_query(session.query(AuthorItem.Model).filter(AuthorItem.Model.hasCo == True), AuthorItem.Model.id, 1000):
+                yield window
+        finally:
+            session.close()
+
     def __init__(self, *args, **kwargs):
         super(self.__class__, self).__init__(*args, **kwargs)
 
         # fields from the database
-        self.fields = all_fields()
+        self.fields = self.all_fields()
         # select a field to start at
         if self.fields:
             start_author = self.fields.next().id

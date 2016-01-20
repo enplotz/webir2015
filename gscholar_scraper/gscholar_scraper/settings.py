@@ -1,12 +1,5 @@
 # -*- coding: utf-8 -*-
 
-from os.path import join, dirname
-from dotenv import load_dotenv
-from os import environ
-
-dotenv_path = join(dirname(__file__), '.env')
-load_dotenv(dotenv_path)
-
 # Scrapy settings for gscholar_scraper project
 #
 # For simplicity, this file contains only settings considered important or
@@ -54,9 +47,9 @@ DOWNLOADER_MIDDLEWARES = {
     'scrapy.downloadermiddleware.retry.RetryMiddleware': None,
 
     'scrapy_fake_useragent.middleware.RandomUserAgentMiddleware': 400,
-    'gscholar_scraper.middlewares.ProxyMiddleware': 410,
+    'gscholar_scraper.middlewares.ProxyMiddleware': None,
     # TODO fix own middleware that renews tor identity
-    'gscholar_scraper.middlewares.ProxiedTorConnectionMiddleware' : 500,
+    'gscholar_scraper.middlewares.ProxiedTorConnectionMiddleware' : None,
     'gscholar_scraper.middlewares.LoggerMiddleware' : 900,
 }
 
@@ -94,10 +87,8 @@ DEFAULT_REQUEST_HEADERS = {
 # Configure item pipelines
 # See http://scrapy.readthedocs.org/en/latest/topics/item-pipeline.html
 ITEM_PIPELINES = {
-    # we want to set our default values as early as possible
-    'gscholar_scraper.pipelines.DefaultValuesForItem' : 0,
-    'gscholar_scraper.pipelines.GscholarScraperPipeline': 300,
-    'gscholar_scraper.pipelines.DatabaseSavingPipeline' : 900,
+    'gscholar_scraper.pipelines.DefaultValuesForItem' : None,
+    'gscholar_scraper.pipelines.PostgresStoragePipeline' : 900,
 }
 
 # Enable and configure the AutoThrottle extension (disabled by default)
@@ -118,13 +109,3 @@ ITEM_PIPELINES = {
 #HTTPCACHE_DIR='httpcache'
 #HTTPCACHE_IGNORE_HTTP_CODES=[]
 #HTTPCACHE_STORAGE='scrapy.extensions.httpcache.FilesystemCacheStorage'
-
-# Use configuration from .env file :)
-DATABASE = {
-    'drivername' : 'postgres',
-    'host' : environ["DB_HOST"],
-    'port' : environ["DB_PORT"],
-    'username' : environ["DB_USERNAME"],
-    'password' : environ["DB_PASSWORD"],
-    'database' : environ["DB_DATABASE"],
-}

@@ -1,35 +1,34 @@
-import scrapy
-import re
-from gscholar_scraper.items import FOSItem, AuthorItem
-from scrapy.http import Request
-from scrapy.loader import ItemLoader
-import gscholar_scraper.utils as utils
-from gscholar_scraper.models import db_connect, windowed_query, column_windows
-from sqlalchemy.orm import sessionmaker
 import random
+import re
 import urllib2
 
+from scrapy.http import Request
+from scrapy.loader import ItemLoader
 
-def all_fields():
-    engine = db_connect()
-    session = sessionmaker(bind=engine)()
+import gscholar_scraper.utils as utils
+from gscholar_scraper.items import AuthorItem
+from gscholar_scraper.models import windowed_query
+from gscholar_scraper.spiders.base import DBConnectedSpider
 
-    try:
-        for window in windowed_query(session.query(AuthorItem.Model).filter(AuthorItem.Model.org != None), AuthorItem.Model.org, 1000):
-            yield window
-    finally:
-        session.close()
 
-class AuthorOrg(scrapy.Spider):
+class AuthorOrg(DBConnectedSpider):
     name = "author_org"
     handle_httpstatus_list = [200, 302, 400, 402, 503]
     pattern = 'https://scholar.google.de/citations?view_op=view_org&hl=de&org={0}'
+
+    def all_fields(self):
+        session = self.create_session()
+        try:
+            for window in windowed_query(session.query(AuthorItem.Model).filter(AuthorItem.Model.org != None), AuthorItem.Model.org, 1000):
+                yield window
+        finally:
+            session.close()
 
     def __init__(self, *args, **kwargs):
         super(self.__class__, self).__init__(*args, **kwargs)
 
         # fields from the database
-        self.fields = all_fields()
+        self.fields = self.all_fields()
         # appended urls from pagination
         self.container = []
 

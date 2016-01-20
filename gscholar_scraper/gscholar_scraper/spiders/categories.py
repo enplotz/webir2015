@@ -1,14 +1,14 @@
 # -*- coding: utf-8 -*-
-import scrapy
-from gscholar_scraper.items import CategoryItem, SubCategoryItem
-from time import ctime
-from scrapy.loader import ItemLoader
-from scrapy.spiders import Spider, Rule
-from scrapy.linkextractors import LinkExtractor
-from scrapy.http import Request
 from urlparse import urlparse, parse_qs, urljoin
 
-class CategoriesSpider(Spider):
+from scrapy.http import Request
+from scrapy.loader import ItemLoader
+
+from gscholar_scraper.items import CategoryItem, SubCategoryItem
+from gscholar_scraper.spiders.base import DBConnectedSpider
+
+
+class CategoriesSpider(DBConnectedSpider):
     # Configure the spider
     name = "categories"
     allowed_domains = ["scholar.google.com"]

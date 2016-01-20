@@ -293,5 +293,4 @@ def schedule_spider():
     )
 
 if __name__ == '__main__':
-    # print(environ['APP_SETTINGS'])
     app.run(host='0.0.0.0', port=5000)

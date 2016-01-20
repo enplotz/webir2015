@@ -8,7 +8,9 @@ from scrapy.utils.project import get_project_settings
 
 import urllib
 
-class AuthorLabels(scrapy.Spider):
+from gscholar_scraper.spiders.base import DBConnectedSpider
+
+class AuthorLabels(DBConnectedSpider):
     name = "author_labels"
     handle_httpstatus_list = [200, 302, 400, 402, 503]
 

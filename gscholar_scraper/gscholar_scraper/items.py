@@ -8,14 +8,39 @@ import re
 import urllib2
 
 import scrapy
+from scrapy.item import Item, Field
 from scrapy.loader.processors import TakeFirst, MapCompose
-from sqlalchemy import Column, Integer, String, Boolean
+from sqlalchemy import Column, TIMESTAMP
+from sqlalchemy import Integer, String, Boolean, Text
+from sqlalchemy import func
 from sqlalchemy.dialects import postgresql
+from sqlalchemy.ext.declarative import declarative_base, declared_attr
 
-from gscholar_scraper.models import DeclarativeBase
+
+class TimestampedBase(object):
+    @declared_attr
+    def __tablename__(cls):
+        return cls.__name__.lower()
+
+    created_at = Column(TIMESTAMP, server_default=func.now())
+    updated_at = Column(TIMESTAMP, server_default=func.now(), onupdate=func.current_timestamp())
 
 
-class GScholarItem(scrapy.Item):
+DeclarativeBase = declarative_base(cls=TimestampedBase)
+
+class Website(Item):
+
+    class Model(DeclarativeBase):
+        __tablename__ = 'websites'
+        name = Column(String, primary_key=True)
+        description = Column(Text)
+        url = Column(String)
+
+    name = Field()
+    description = Field()
+    url = Field()
+
+class GScholarItem(Item):
     pass
 
 

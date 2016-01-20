@@ -5,8 +5,11 @@ from scrapy.conf import settings
 from stem import Signal, SocketClosed
 from stem.control import Controller
 from fake_useragent import UserAgent
+from os import environ
 
 IP_ENDPOINT = 'http://icanhazip.com/'
+
+TOR_CONTROL_PASSWORD = 'TOR_CONTROL_PASSWORD'
 
 ua = UserAgent()
 ua.update()
@@ -32,10 +35,11 @@ def make_request(url):
     return urllib2.urlopen(request).read().rstrip()
 
 
-def renew_connection(logger):
+def renew_connection(logger, settings):
     try:
+        # TODO docker file with control port and password
         with Controller.from_port(port = 9051) as controller:
-            pw = os.environ["TOR_CONTROL_PASSWORD"]
+            pw = environ.get(TOR_CONTROL_PASSWORD, settings.get(TOR_CONTROL_PASSWORD, default='')),
             controller.authenticate(password = pw)
             controller.signal(Signal.NEWNYM)
     except SocketClosed as e:
@@ -64,7 +68,7 @@ class ProxiedTorConnectionMiddleware(object):
             spider.logger.error('User-Agent: %s' % request.headers['User-Agent'])
 
             old_ip = make_request(IP_ENDPOINT)
-            renew_connection(spider.logger)
+            renew_connection(spider.logger, spider.settings)
             new_ip = make_request(IP_ENDPOINT)
             seconds = 0
 
