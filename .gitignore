@@ -69,3 +69,4 @@ target/
 crawls/
 # Ignore scraped items flat files 
 gscholar_scraper/items/
+*.env
