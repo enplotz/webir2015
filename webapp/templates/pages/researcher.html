@@ -6,189 +6,193 @@
     <div id="page-wrapper">
         <div class="container-fluid">
             <div class="row">
-                <div class="col-lg-12">
-                    <h1 class="page-header">{{ header }} <small>
-                        {% if researcher %}
-                        <button title="Refresh Data (future feature)"
-                                type="button"
-                                class="btn btn-mini disabled refresh-data"
-                                data-placement="bottom"
-                                ><i class="ui-icon-refresh"></i>Last updated: {{ researcher.updated_at.strftime('%H:%M / %d-%m-%Y') }}</button>
-                    </small>
-                        {% endif %}
-                    </h1>
+                <div class="col-12">
+                    <h1 class="page-header">{{ header }}</h1>
                 </div>
                 <!-- /.col-lg-12 -->
             </div>
             {% if errors %}
-                <div class="row">
-                    <div class="col-lg-12">
-                        {% for error in errors %}
-                            <div class="alert alert-danger" role="alert">
-                                <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
-                                <span class="sr-only">Error:</span>
-                                {{ error }}
-                            </div>
-                        {% endfor %}
+            <div class="row">
+                <div class="col-lg-12">
+                    {% for error in errors %}
+                        <div class="alert alert-danger" role="alert">
+                            <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
+                            <span class="sr-only">Error:</span>
+                            {{ error }}
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+            {% if researcher %}
+            <div class="row">
+                <div class="col-sm-6 col-md-3 col-lg-3">
+                    <a href="#" class="thumbnail">
+                        <img src="https://scholar.google.de/citations?view_op=view_photo&user={{ researcher.id }}&citpid=2" alt="...">
+                    </a>
+                </div>
+                <div class="col-sm-6 col-md-3 col-lg-3">
+                    <div class="caption row">
+                        <h3>
+                            <a href="https://scholar.google.ch/citations?hl=de&user={{ researcher.id }}">{{ researcher.name }}</a>
+                        </h3>
+                    </div>
+                    <div class="row">
+                        <button id="refresh_author" title="Refresh Data"
+                                type="button"
+                                class="btn btn-default btn-primary"
+                                data-placement="bottom"
+                        >Renew
+                        </button>
+                        <p>Recently updated: <span data-toggle="tooltip" data-placement="top"
+                                                   title="{{ researcher.updated_at.strftime('%H:%M / %d-%m-%Y') }}">{{ researcher.updated_at|friendly_time }}</span>
+                        </p>
                     </div>
                 </div>
-            {% endif %}
-            <div class="row">
-                {% if researcher %}
+                <div class="table-responsive col-sm-12 col-md-3 col-lg-2">
                     <div class="row">
-                        <div class="col-lg-3">
-                            <div class="thumbnail">
-                                <img src="https://scholar.google.de/citations?view_op=view_photo&user={{ researcher.id }}&citpid=2"
-                                     alt="Profile picture of {{ researcher.name }}." width="150px" height="150px">
-
-                                <div class="caption">
-                                    <h3>
-                                        <a href="https://scholar.google.ch/citations?hl=de&user={{ researcher.id }}">{{ researcher.name }}</a>
-                                    </h3>
-
-                                    <p> <!-- 'if' required for some reason...-->
-                                        {% if researcher.fields_of_study|length > 0 %}
-                                            {% for field in researcher.fields_of_study %}
-                                                <span><a href="/fos/{{ field }}">{{ field }}</a> (<a
-                                                        href="/researcher/{{ researcher.id }}/fos/{{ field }}">compare</a>)</span>
-                                            {% endfor %}
-                                        {% endif %}
-                                    </p>
-                                </div>
+                        {% if not researcher.measures %}
+                            <div class="alert alert-info" role="alert">
+                                <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
+                                <span class="sr-only">Info:</span>
+                                Author did not have any measures present.
                             </div>
-                        </div>
-                        <div class="table-responsive col-lg-3">
-                            {% if not researcher.measures %}
-                                <div class="alert alert-info" role="alert">
-                                    <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
-                                    <span class="sr-only">Info:</span>
-                                    Author did not have any measures present.
-                                </div>
-                            {% else %}
-                                <table class="table table-striped">
-                                    <thead>
-                                    <tr>
-                                        <th>Citation indices</th>
-                                        <th>All</th>
-                                        <th>Since 2010</th>
-                                    </tr>
-                                    </thead>
-                                    <tbody>
-                                    <tr>
-                                        <td>Citations</td>
-                                        <td>{{ researcher.measures[0] }}</td>
-                                        <td>{{ researcher.measures[1] }}</td>
-                                    </tr>
-                                    <tr>
-                                        <td>h-index</td>
-                                        <td>{{ researcher.measures[2] }}</td>
-                                        <td>{{ researcher.measures[3] }}</td>
-                                    </tr>
-                                    <tr>
-                                        <td>i10-index</td>
-                                        <td>{{ researcher.measures[4] }}</td>
-                                        <td>{{ researcher.measures[5] }}</td>
-                                    </tr>
-                                    </tbody>
-                                </table>
-                            {% endif %}
-                        </div>
-
+                        {% else %}
+                            <table class="table table-striped">
+                                <thead>
+                                <tr>
+                                    <th>Citation indices</th>
+                                    <th>All</th>
+                                    <th>Since 2010</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                <tr>
+                                    <td>Citations</td>
+                                    <td>{{ researcher.measures[0] }}</td>
+                                    <td>{{ researcher.measures[1] }}</td>
+                                </tr>
+                                <tr>
+                                    <td>h-index</td>
+                                    <td>{{ researcher.measures[2] }}</td>
+                                    <td>{{ researcher.measures[3] }}</td>
+                                </tr>
+                                <tr>
+                                    <td>i10-index</td>
+                                    <td>{{ researcher.measures[4] }}</td>
+                                    <td>{{ researcher.measures[5] }}</td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        {% endif %}
                     </div>
-                    <div class="row">
-                        <div class="col-sm-12">
-                            <h2>Publications ({{ publications|length }})</h2>
-
-                            <div class="table-responsive ">
-                                {% if not publications %}
-                                    <div class="alert alert-info" role="alert">
-                                        <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
-                                        <span class="sr-only">Info:</span>
-                                        Author does not have any publications present.
-                                    </div>
-                                {% else %}
-                                    <table class="table table-striped" id="publications">
-                                        <thead>
-                                        <tr>
-                                            <th>Title</th>
-                                            <th>Cite Count</th>
-                                            <th>Year</th>
-                                        </tr>
-                                        </thead>
-                                        <tbody>
-                                        {% for pub in publications %}
-                                            <tr>
-                                                <td>
-                                                    <a href="https://scholar.google.ch/citations?view_op=view_citation&hl=de&user={{ researcher.id }}&citation_for_view={{ researcher.id }}:{{ pub.id }}">{{ pub.title }}</a>
-                                                </td>
-                                                <td>{% if pub.cite_count %}{{ pub.cite_count }}{% endif %}</td>
-                                                <td>{{ pub.year }}</td>
-                                            </tr>
-                                        {% endfor %}
-                                        </tbody>
-                                    </table>
-                                {% endif %}
-                            </div>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-sm-12" style="height:600px;margin-bottom:200px">
-                            <h2>Co-Author Explorer</h2>
-                            <div id="wrapperOuter">
-                                <div id="explorer-wrapper">
-
-                                </div>
-                                <div id="wrapperInfo">
-                                    <div id="upperInfo" style="width:150px; height:200px;">
-                                        <img width="114" height="150" id="profile" alt="Hover a node."></img>
-
-                                    </div>
-                                    <center>
-                                        <span id="classLabel">h-Index</span>:<span id="valLabel">-</span>
-                                    </center>
-                                    <hr>
-                                    <center>
-                                        <button id='btnUndo'>Undo</button>
-                                        <button id='btnRedo'>Redo</button>
-                                    </center>
-                                    <div id="settings"
-                                         style="bottom:0;padding-bottom:4px;position:absolute;width:150px;">
-                                        <hr>
-                                        <div id="settingsInner" style="padding-left:12px;">
-                                            <div id="nodeExpansion">
-                                                <i>Max. Node Expansion</i>
-                                                <form autocomplete="off" style="margin-left:5px">
-                                                    <input id="spinner" name="nodeExpansion">
-                                                </form>
-                                            </div>
-                                            <div id="nodeAttribute">
-                                                <i> Node Attribute</i>
-                                                <form autocomplete="off" style="margin-left:5px">
-                                                    <select name="nodeAttr" id="nodeAttr">
-                                                        <option value="2" selected>h-Index</option>
-                                                        <option value="3">h-Index (2010)</option>
-                                                        <option value="4">i-Index</option>
-                                                        <option value="5">i-Index(2010)</option>
-                                                        <option value="6">Documents</option>
-                                                        <option value="7">Documents(2010)</option>
-                                                        <option value="0">Cited</option>
-                                                        <option value="1">Cited(2010)</option>
-                                                    </select>
-                                                </form>
-                                            </div>
-                                            <div id="colorSettings">
-                                                <i> Color Scheme </i>
-                                                <div id='colorPicker'></div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                            </div>
-                        </div>
-                    </div>
-                {% endif %}
+                </div>
+                <div class="col-sm-12 col-md-3 col-lg-4">
+                    <h4 data-toggle="tooltip" data-placement="top"
+                        title="List authors in the field or compare with average in field.">Fields of Study</h4>
+                    <ul class="list-unstyled"> <!-- 'if' required for some reason...-->
+                        {% if researcher.fields_of_study|length > 0 %}
+                            {% for field in researcher.fields_of_study %}
+                                <li><i class="fa fa-tag"></i> <a href="/fos/{{ field }}" title="List Authors in {{ field }}">{{ field }}</a> (<a
+                                        href="/researcher/{{ researcher.id }}/fos/{{ field }}" title="Compare for {{ field }}"><i class="fa fa-bar-chart"></i></a>)</li>
+                            {% endfor %}
+                        {% endif %}
+                    </ul>
+                </div>
             </div>
+            <div class="row">
+                <div class="col-sm-12">
+                    <h2>Publications ({{ publications|length }})</h2>
+
+                    <div class="table-responsive ">
+                        {% if not publications %}
+                            <div class="alert alert-info" role="alert">
+                                <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
+                                <span class="sr-only">Info:</span>
+                                Author does not have any publications present.
+                            </div>
+                        {% else %}
+                            <table class="table table-striped" id="publications">
+                                <thead>
+                                <tr>
+                                    <th>Title</th>
+                                    <th>Cite Count</th>
+                                    <th>Year</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {% for pub in publications %}
+                                    <tr>
+                                        <td>
+                                            <a href="https://scholar.google.ch/citations?view_op=view_citation&hl=de&user={{ researcher.id }}&citation_for_view={{ researcher.id }}:{{ pub.id }}">{{ pub.title }}</a>
+                                        </td>
+                                        <td>{% if pub.cite_count %}{{ pub.cite_count }}{% endif %}</td>
+                                        <td>{{ pub.year }}</td>
+                                    </tr>
+                                {% endfor %}
+                                </tbody>
+                            </table>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+{#                <div class="col-sm-12" style="height:600px;margin-bottom:200px">#}
+{#                    <h2>Co-Author Explorer</h2>#}
+{#                    <div id="wrapperOuter">#}
+{#                        <div id="explorer-wrapper">#}
+{##}
+{#                        </div>#}
+{#                        <div id="wrapperInfo">#}
+{#                            <div id="upperInfo" style="width:150px; height:200px;">#}
+{#                                <img width="114" height="150" id="profile" alt="Hover a node."></img>#}
+{##}
+{#                            </div>#}
+{#                            <center>#}
+{#                                <span id="classLabel">h-Index</span>:<span id="valLabel">-</span>#}
+{#                            </center>#}
+{#                            <hr>#}
+{#                            <center>#}
+{#                                <button id='btnUndo'>Undo</button>#}
+{#                                <button id='btnRedo'>Redo</button>#}
+{#                            </center>#}
+{#                            <div id="settings"#}
+{#                                 style="bottom:0;padding-bottom:4px;position:absolute;width:150px;">#}
+{#                                <hr>#}
+{#                                <div id="settingsInner" style="padding-left:12px;">#}
+{#                                    <div id="nodeExpansion">#}
+{#                                        <i>Max. Node Expansion</i>#}
+{#                                        <form autocomplete="off" style="margin-left:5px">#}
+{#                                            <input id="spinner" name="nodeExpansion">#}
+{#                                        </form>#}
+{#                                    </div>#}
+{#                                    <div id="nodeAttribute">#}
+{#                                        <i> Node Attribute</i>#}
+{#                                        <form autocomplete="off" style="margin-left:5px">#}
+{#                                            <select name="nodeAttr" id="nodeAttr">#}
+{#                                                <option value="2" selected>h-Index</option>#}
+{#                                                <option value="3">h-Index (2010)</option>#}
+{#                                                <option value="4">i-Index</option>#}
+{#                                                <option value="5">i-Index(2010)</option>#}
+{#                                                <option value="6">Documents</option>#}
+{#                                                <option value="7">Documents(2010)</option>#}
+{#                                                <option value="0">Cited</option>#}
+{#                                                <option value="1">Cited(2010)</option>#}
+{#                                            </select>#}
+{#                                        </form>#}
+{#                                    </div>#}
+{#                                    <div id="colorSettings">#}
+{#                                        <i> Color Scheme </i>#}
+{#                                        <div id='colorPicker'></div>#}
+{#                                    </div>#}
+{#                                </div>#}
+{#                            </div>#}
+{#                        </div>#}
+{##}
+{#                    </div>#}
+{#                </div>#}
+            </div>
+            {% endif %}
             <!-- /.row -->
         </div>
         <!-- /.container-fluid -->
@@ -199,6 +203,79 @@
 
 {% block pagescript %}
     <script type="text/javascript">
+        $(function () {
+            $('[data-toggle="tooltip"]').tooltip()
+        });
+
+        // possible improvement: http://www.jqueryscript.net/time-clock/User-Friendly-Time-Formatting-Plugin-with-jQuery-Age.html
+
+        // Replace "Refreshed" with icon, while polling/waiting
+        // button id="refresh_author"
+        // <i class="fa fa-spinner fa-spin"></i>
+        // add button class: disabled
+
+        var base_url = 'http://192.168.99.100/crawler/'
+        var list_jobs = 'listjobs.json?project=gscholar_scraper'
+        // without start_authors the spider does nothing
+        var schedule_spider = 'schedule.json?project=gscholar_scraper&spider=author_complete'
+
+        function doPoll(job_id){
+            // while our job is not yet done, we poll again
+            // then call on_finished once it is listed there
+            console.log(job_id)
+            $.ajax({
+                type: 'GET',
+                url: base_url + list_jobs,
+                async: true,
+                success: function (msg) {
+                    if (!msg) {
+                        setTimeout(doPoll, 2000);
+                        console.log('Got nothing back, setting timeout.')
+                    } else {
+                        // check that our job is finished
+                        // console.log(msg)
+
+                        var finished = msg.finished;
+                        var found = false;
+                        for (var i = 0; i < finished.length; i++) {
+                            if (finished[i].id == job_id) {
+                                found = true;
+                                break;
+                            }
+                        }
+                        if (!found) {
+                            setTimeout(function() { doPoll(job_id); }, 2000);
+                        } else {
+                            location.reload();
+                        }
+                    }
+                },
+                error: function (xhr, ajaxOptions, thrownError) {
+                    alert('AJAX failure');
+                }
+            });
+
+        };
+
+
+        function doRefresh(id){
+            // Set throbber (waiting spinner)
+            // get the button
+            $('#refresh_author').html("<i class='fa fa-spinner fa-spin'></i> Refreshing...")
+
+            $.post(base_url + schedule_spider + '&start_authors={{ researcher.id }}', function(data) {
+               console.log(data);
+                doPoll(data.jobid);
+            });
+        }
+
+        $(document).ready(function () {
+            $('#refresh_author').click(function () {
+                doRefresh('{{ researcher.id }}');
+            });
+        });
+
+
         $(document).ready(function () {
             $('#publications').DataTable();
             __initExplorer();
@@ -288,7 +365,6 @@
                     }
                 }
             };
-{#            $('.refresh-data').tooltip();#}
         });
     </script>
 {% endblock %}

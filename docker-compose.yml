@@ -29,6 +29,7 @@ web:
   env_file:
     - database.env
     - proxy.env
+    - webapp.env
   command: /usr/local/bin/gunicorn -w 2 -b :8000 app:app
 
 nginx:

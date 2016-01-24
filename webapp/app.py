@@ -1,10 +1,11 @@
+import time
+from datetime import datetime
 from os import environ
-from os.path import join, dirname
 
 import requests
-from dotenv import load_dotenv
 from flask import Blueprint, render_template, redirect, url_for, request, Response
-from flask import Flask, jsonify, abort
+from flask import Flask
+from flask import jsonify, abort
 from flask.ext.cache import Cache
 from flask_bootstrap import Bootstrap
 from flask_debug import Debug
@@ -18,17 +19,19 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy.sql.expression import cast
 
 import queries.co_network as co
-from queries.dashboard import avg_measures_sql,top_authors_m, time_series
+from queries.dashboard import avg_measures_sql,top_authors_m, time_series_documents, time_series_cited
 
-dotenv_path = join(dirname(__file__), '.env')
-load_dotenv(dotenv_path)
+# dotenv_path = join(dirname(__file__), '.env')
+# load_dotenv(dotenv_path)
 
 app = Flask(__name__)
 app.config.from_object(environ['APP_SETTINGS'])
+# app.config.from_object(conf)
 Bootstrap(app)
 Debug(app)
+
 # Check Configuring Flask-Cache section for more details
-cache = Cache(app,config={'CACHE_TYPE': 'simple'})
+cache = Cache(app, config={'CACHE_TYPE': 'simple'})
 
 frontend = Blueprint('frontend', __name__)
 app.register_blueprint(frontend)
@@ -52,20 +55,65 @@ _EngineDebuggingSignalEvents(engine, app.import_name).register()
 session_factory = sessionmaker(bind=engine)
 session = flask_scoped_session(session_factory, app)
 
+# From http://flask.pocoo.org/snippets/33/
+@app.template_filter()
+def friendly_time(dt, past_="ago",
+    future_="from now",
+    default="just now"):
+    """
+    Returns string representing "time since"
+    or "time until" e.g.
+    3 days ago, 5 hours from now etc.
+    """
+
+    now = datetime.now()
+    if now > dt:
+        diff = now - dt
+        dt_is_past = True
+    else:
+        diff = dt - now
+        dt_is_past = False
+
+    periods = (
+        (diff.days / 365, "year", "years"),
+        (diff.days / 30, "month", "months"),
+        (diff.days / 7, "week", "weeks"),
+        (diff.days, "day", "days"),
+        (diff.seconds / 3600, "hour", "hours"),
+        (diff.seconds / 60, "minute", "minutes"),
+        (diff.seconds, "second", "seconds"),
+    )
+
+    for period, singular, plural in periods:
+
+        if period:
+            return "%d %s %s" % (period, \
+                singular if period == 1 else plural, \
+                past_ if dt_is_past else future_)
+
+    return default
 
 # Cache for x seconds
-@cache.cached(timeout=60)
+@cache.cached(timeout=30, key_prefix='get_metrics')
 def get_metrics():
+    # Use func.count to only count ids
     return {
-        'num_authors': session.query(Author).count(),
+        'num_authors': session.query(func.count(Author.id)).scalar(),
         'num_authors_fully': session.query(Author).filter(Author.measures.isnot(None)).count(),
-        'num_documents': session.query(Document).count(),
-        'num_fields': session.query(Label).count(),
+        'num_documents': session.query(func.count(Document.id)).scalar(),
+        'num_fields': session.query(func.count(Label.field_name)).scalar(),
     }
 
-# @app.errorhandler(404)
-# def page_not_found(e):
-#     return render_template('pages/404.html'), 404
+@cache.cached(timeout=30, key_prefix='get_rankings')
+def rankings():
+    top_q = top_authors_m(1,10)
+    ts_docs_q = time_series_documents()
+    ts_cites = time_series_cited()
+    return {
+        'ranks': session.execute(top_q).scalar(),
+        'series_doc': session.execute(ts_docs_q).scalar(),
+        'series_cities': session.execute(ts_cites).scalar()
+    }
 
 @app.route('/', methods=['GET'])
 def index():
@@ -80,16 +128,34 @@ def index():
     # Max-Cites by Field
     # Avg # Cites by
     try:
-        ranks = session.execute(top_authors_m(1,10))
-        series_docs = session.execute(time_series(False))
-        series_cites = session.execute(time_series(True))
+        r = rankings()
+        ranks = r['ranks']
+        series_doc = r['series_doc']
+        series_cities = r['series_cities']
         metrics = get_metrics()
-        num_authors = session.query(func.count(Author.id)).scalar()
+        # num_authors = session.query(func.count(Author.id)).scalar()
     except Exception as e:
         errors.append(e)
         return render_template('pages/index.html', errors=errors, rankings=ranks, metrics=None)
-    return render_template('pages/index.html', errors=errors, rankings=ranks, metrics=metrics, num_authors=num_authors)
+    return render_template('pages/index.html', errors=errors, rankings=ranks, metrics=metrics, num_authors=metrics['num_authors'])
 
+
+@app.route('/compare', methods=['POST', 'GET'])
+def compare_authors():
+    # This route should enable the user to compare n authors.
+    # We have to start a crawling job
+    # wait until it is finished
+    # redirect to a new/the same page and display the results
+    pass
+
+
+@app.route('/yield')
+def yield_test():
+    def inner():
+        for x in range(100):
+            time.sleep(1)
+            yield '%s<br/>\n' % x
+    return Response(inner(), mimetype='text/html')
 
 def field_term(search_term):
     return '_'.join(search_term.lower().split(' '))

@@ -63,11 +63,11 @@ File: `proxy.env`
 
 The postgreSQL database is accessed using the following parameters:
 
-- `SCRAPY_DB_HOST=...`
-- `SCRAPY_DB_PORT=...`
-- `SCRAPY_DB_USERNAME=...`
-- `SCRAPY_DB_PASSWORD=...`
-- `SCRAPY_DB_DATABASE=...`
+- `DB_HOST=...`
+- `DB_PORT=...`
+- `DB_USERNAME=...`
+- `DB_PASSWORD=...`
+- `DB_DATABASE=...`
 
 File: `database.env`
 

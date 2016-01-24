@@ -10,7 +10,7 @@ import urllib2
 import scrapy
 from scrapy.item import Item, Field
 from scrapy.loader.processors import TakeFirst, MapCompose
-from sqlalchemy import Column, TIMESTAMP
+from sqlalchemy import Column, TIMESTAMP, Index
 from sqlalchemy import Integer, String, Boolean, Text
 from sqlalchemy import func
 from sqlalchemy.dialects import postgresql
@@ -32,7 +32,7 @@ class Website(Item):
 
     class Model(DeclarativeBase):
         __tablename__ = 'websites'
-        name = Column(String, primary_key=True)
+        name = Column(String, primary_key=True, index=True, unique=True)
         description = Column(Text)
         url = Column(String)
 
@@ -57,7 +57,7 @@ class FOSItem(GScholarItem):
 
     class Model(DeclarativeBase):
         __tablename__ = 'labels'
-        field_name = Column(String, primary_key=True)
+        field_name = Column(String, primary_key=True, index=True, unique=True)
 
     field_name = scrapy.Field(input_processor=fix_string, output_processor=TakeFirst())
 
@@ -68,6 +68,7 @@ class CoAuthorItem(GScholarItem):
         __tablename__ = 'coauthor'
         author1 = Column(String, primary_key=True)
         author2 = Column(String, primary_key=True)
+        __table_args__ = (Index('co_author_idx', author1, author2),)
 
     author1 = scrapy.Field(output_processor=TakeFirst())
     author2 = scrapy.Field(output_processor=TakeFirst())
@@ -79,7 +80,7 @@ class AuthorItem(GScholarItem):
         """Sqlalchemy authors model"""
         __tablename__ = "authors"
 
-        id = Column(String, primary_key=True)
+        id = Column(String, primary_key=True, index=True, unique=True)
         name = Column(String)
 
         fos = Column('fields_of_study', postgresql.ARRAY(String), nullable=True)
@@ -110,6 +111,8 @@ class DocItem(GScholarItem):
         id = Column(String, primary_key=True)
         cite_count = Column(Integer, nullable=True)
         year = Column(Integer)
+        # btree seems to be the default index type
+        __table_args__ = (Index('doc_author_idx', author_id, id),)
 
     author_id = scrapy.Field(
         output_processor = TakeFirst()

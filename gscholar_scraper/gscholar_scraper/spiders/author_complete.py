@@ -13,77 +13,29 @@ from gscholar_scraper.items import AuthorItem, DocItem, CoAuthorItem
 from gscholar_scraper.models import windowed_query
 from gscholar_scraper.spiders.base import DBConnectedSpider
 
-# TODO figure out how start_authors for post request to spider...
 
-class AuthorDetails(DBConnectedSpider):
-    """ Spider that crawls the profile page of a single author for all details. It either fetches the list of already
-    crawled authors (for which details are still missing) or uses the parameter `start_authors` to start with specific
+class AuthorComplete(DBConnectedSpider):
+    """ Spider that crawls the profile page of a single author for all details. It uses the parameter `start_authors` to start with specific
     authors.
     """
-    name = "author_detail"
-    # handle_httpstatus_list = [200, 302, 400, 402, 503]
+    name = "author_complete"
 
     pattern = 'https://scholar.google.de/citations?hl=de&user={0}&cstart=0&pagesize=100'
 
-    def missing_authors(self):
-        session = self.create_session()
-
-        try:
-            q = session.query(AuthorItem.Model).filter(or_(AuthorItem.Model.measures == None,
-                                                           AuthorItem.Model.org == None,
-                                                           AuthorItem.Model.hasCo == None))
-            for window in windowed_query(q, AuthorItem.Model.id, 1000):
-                yield window
-        finally:
-            session.close()
-
     def __init__(self, start_authors=None, *args, **kwargs):
-
+        if start_authors:
+            self.logger.info('Starting with given authors: %s' % start_authors)
+            self.start_urls = [self.pattern.format(id) for id in start_authors.split(',')]
+        else:
+            self.logger.error('No specific author given. Will not crawl anything.')
         super(self.__class__, self).__init__(*args, **kwargs)
 
-        # Scrape only the given authors
-        self.scrape_given = len(self.start_urls) > 0
-
-
-        self.missing_authors = self.missing_authors()
         # author profiles with cstart and pagesize parameters
         self.container = []
 
-        # if we did not seed the crawler ourselves for a single author crawl
-        # select a random url to start at
-        if not self.start_urls and self.missing_authors:
-            start_author = self.missing_authors.next()
-            print 'starting with author %s' % start_author.name
-            self.start_urls = [self.pattern.format(start_author.id)]
-
-    def next_author_from_db(self):
-        next_author = next(self.missing_authors, None)
-        if not next_author:
-            return None
-        self.logger.debug('Choosing existing author %s.' % next_author.name)
-        return self.pattern.format(next_author.id)
-
     def choose_next(self):
         # do not choose from database if we only want to scrape the given authors
-        if self.scrape_given:
-            return utils.pop_random(self.container)
-
-        if random.random() > 0.5:
-            if len(self.container) == 0:
-                l = self.next_author_from_db()
-                return l
-            else:
-                u = utils.pop_random(self.container)
-                self.logger.debug('Choosing existing url %s.' % u)
-                return u
-        else:
-            next_author = self.next_author_from_db()
-            if next_author:
-                return next_author
-
-            next_author = utils.pop_random(self.container)
-            self.logger.debug('Choosing existing url %s.' % next_author)
-            return next_author
+        return utils.pop_random(self.container)
 
     def parse_profile(self, response, author_id, old_start):
         self.logger.info('Parsing main profile for author %s.' % author_id)
@@ -200,9 +152,6 @@ class AuthorDetails(DBConnectedSpider):
 
         if next_url:
             yield Request(url=next_url)
-
-    def url_params(self, url):
-        return
 
     def parse(self, response):
 
