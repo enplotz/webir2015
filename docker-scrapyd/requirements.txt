@@ -1,5 +1,0 @@
-sqlalchemy
-psycopg2
-stem
-python-dotenv
-scrapy-fake-useragent

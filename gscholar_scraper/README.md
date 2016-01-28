@@ -138,7 +138,7 @@ We will test with the typical dmoz spider, that is included in all scrapy tutori
 
 To schedule a spider make a `POST` request to the url:
 ```
-http://IP-FROM-DOCKER-MACHINE:6800/schedule.json
+http://localhost:6800/schedule.json
 ```
 
 The parameters are:
