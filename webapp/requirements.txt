@@ -11,3 +11,4 @@ flask-cache
 Flask-SQLALchemy-Session
 requests
 gunicorn
+grequests

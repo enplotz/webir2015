@@ -1,0 +1,226 @@
+<!-- extend base layout -->
+{% extends "base.html" %}
+
+{% block content %}
+
+{#    <div id="page-wrapper">#}
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-md-12">
+                    <h1 class="page-header">{{ header }} <span class="small">This page shows exemplary analytics about researchers.</span></h1>
+                </div>
+                <!-- /.col-lg-12 -->
+            </div>
+            {% if errors %}
+                <div class="row">
+                    <div class="col-md-12">
+                        {% for error in errors %}
+                            <div class="alert alert-danger" role="alert">
+                                <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
+                                <span class="sr-only">Error:</span>
+                                {{ error }}
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                <div class="row">
+                    <div id="show_results" class="col-md-12 show_results"><a
+                            class="btn btn-default btn-primary btn-lg btn-block" href="/multisearch" role="button">Go
+                        Back To Search</a></div>
+                </div>
+            {% endif %}
+            {% if researchers %}
+                <div class="row">
+                    {% for r in researchers %}
+
+                        <div class="col-md-2">
+                            <h4><a href="/researcher/{{ r.id }}">{{ r.name }}</a></h4>
+                            <ul class="list-unstyled"> <!-- 'if' required for some reason...-->
+                                {% if r.fields_of_study %}
+                                    {% for field in r.fields_of_study %}
+                                        <li><i class="fa fa-tag"></i> <a href="/fos/{{ field }}"
+                                                                         title="List Authors in {{ field }}">{{ field }}</a>
+                                            (<a
+                                                    href="/researcher/{{ r.id }}/fos/{{ field }}"
+                                                    title="Compare for {{ field }}"><i class="fa fa-bar-chart"></i></a>)
+                                        </li>
+                                    {% endfor %}
+                                {% endif %}
+                            </ul>
+                        </div>
+                        {#                        <div class="col-md-10">#}
+                        {#                            <div class="row">#}
+                        {#                                <div class="col-md-6">#}
+                        {#                                    <div id="chart_citations_{{ r.id }}"></div>#}
+                        {#                                </div>#}
+                        {#                                <div class="col-md-6">#}
+                        {#                                    <div id="chart_publications_{{ r.id }}"></div>#}
+                        {#                                </div>#}
+                        {#                            </div>#}
+                        {#                        </div>#}
+
+                    {% endfor %}
+                </div>
+                <div class="row"><div class="col-md-12"><h3>Metrics</h3></div></div>
+                <div class="row">
+                    <div class="col-md-12">
+                        <div id="chart_multi_legend"></div>
+                    </div>
+                    <div class="col-md-12">
+                        <div id="chart_multi_publications"></div>
+                    </div>
+                    <div class="col-md-12">
+                        <div id="chart_multi_citations"></div>
+                    </div>
+                </div>
+            {% endif %}
+            <!-- /.row -->
+        </div>
+        <!-- /.container-fluid -->
+{#    </div>#}
+    <!-- /#page-wrapper -->
+
+{% endblock %}
+
+{% block pagescript %}
+
+    <script type="text/javascript">
+        var fmt = d3.time.format("%Y");
+        var researchers = {{ metrics | tojson }};
+        researchers.forEach(function (r) {
+            r.cite_counts.forEach(function (j) {
+                j.year = fmt.parse(j.year + "");//convert it into date
+            });
+            r.pub_counts.forEach(function (j) {
+                j.year = fmt.parse(j.year + "");//convert it into date
+            });
+        });
+
+{#        researchers.forEach(function (r) {#}
+{#            // Quick charting#}
+{#            var years = r.cite_counts.map(function (el) {#}
+{#                return el.year#}
+{#            });#}
+{#            var min_year = Math.min.apply(null, years);#}
+{#            var max_year = Math.max.apply(null, years);#}
+{#            var mid = min_year + ((max_year - min_year) / 3);#}
+{##}
+{##}
+{#            r.cite_counts.forEach(function (j) {#}
+{#                j.year = fmt.parse(j.year + "");//convert it into date#}
+{#            });#}
+{##}
+{#            MG.data_graphic({#}
+{#                title: "Productivity Index",#}
+{#                description: "Cumulative citation counts of papers published in the same year for " + r.name + " from " + min_year + " to " + max_year + ".",#}
+{#                data: r.cite_counts,#}
+{#                markers: [{'year': fmt.parse(mid + ""), 'label': 'Example Doctoral Thesis'}],#}
+{#                width: 500,#}
+{#                color: 'steelblue',#}
+{#                interpolate: 'monotone',#}
+{#                height: 150,#}
+{#                linked: true,#}
+{#                target: "#chart_citations_" + r.id,#}
+{#                x_accessor: "year",#}
+{#                y_accessor: "count",#}
+{#            });#}
+{##}
+{##}
+{#            r.pub_counts.forEach(function (j) {#}
+{#                j.year = fmt.parse(j.year + "");//convert it into date#}
+{#            });#}
+{##}
+{#            MG.data_graphic({#}
+{#                title: "Publication Count Per Year",#}
+{#                description: "Publication counts for " + r.name + " from " + min_year + " to " + max_year + ".",#}
+{#                data: r.pub_counts,#}
+{#                markers: [{'year': fmt.parse(mid + ""), 'label': 'Example Doctoral Thesis'}],#}
+{#                width: 500,#}
+{#                color: 'steelblue',#}
+{#                interpolate: 'monotone',#}
+{#                height: 150,#}
+{#                linked: true,#}
+{#                target: "#chart_publications_" + r.id,#}
+{#                x_accessor: "year",#}
+{#                y_accessor: "count",#}
+{#            });#}
+{#        });#}
+
+{#        var colors = []#}
+{#        for (i = 0; i < 360; i += 360 / num_colors) {#}
+{#            HSLColor c;#}
+{#            c.hue = i;#}
+{#            c.saturation = 90 + randf() * 10;#}
+{#            c.lightness = 50 + randf() * 10;#}
+{##}
+{#            addColor(c);#}
+{#        }#}
+        var colors = [
+            '#e31a1c',
+            '#1f78b4',
+            '#33a02c',
+            '#ff7f00',
+            '#6a3d9a',
+            '#a6cee3',
+            '#b2df8a',
+            '#fb9a99',
+            '#fdbf6f',
+            '#cab2d6',
+            '#ffff99',
+            '#b15928'];
+
+        MG.data_graphic({
+            title: "Publication Count Per Year",
+            description: "Demoing linked multi-line charts.",
+            data: researchers.map(function(r) { return r.pub_counts; }),
+{#            missing_is_hidden: true,#}
+            interpolate: 'monotone',
+            full_width: true,
+            {# y_scale_type: 'log', #}
+{#            width: 800,#}
+            height: 300,
+{#            right: 40,#}
+            target: '#chart_multi_publications',
+            linked: true,
+            legend: researchers.map(function(r) {return r.name; }),
+            x_accessor: "year",
+            y_accessor: "count",
+            aggregate_rollover: true,
+            legend_target: 'div#chart_multi_legend',
+            y_rug: true,
+            colors: colors,
+            y_extended_ticks: true,
+            x_rollover_format: '%Y',
+        });
+
+        MG.data_graphic({
+            title: "Productivity Index",
+            description: "Cumulative citation counts of papers published in the same year.",
+            data: researchers.map(function(r) { return r.cite_counts; }),
+{#            missing_is_hidden: true,#}
+            interpolate: 'monotone',
+            full_width: true,
+             y_scale_type: 'log',
+{#            width: 800,#}
+            height: 300,
+{#            right: 40,#}
+            target: '#chart_multi_citations',
+            linked: true,
+            legend: researchers.map(function(r) {return r.name; }),
+            x_accessor: "year",
+            y_accessor: "count",
+            aggregate_rollover: true,
+            legend_target: 'div#chart_multi_legend',
+            y_rug: true,
+            colors: colors,
+            y_extended_ticks: true,
+            x_rollover_format: '%Y',
+        });
+
+
+        $(document).ready(function () {
+
+        });
+
+    </script>
+{% endblock %}

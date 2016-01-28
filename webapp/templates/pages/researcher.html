@@ -3,10 +3,10 @@
 
 {% block content %}
 
-    <div id="page-wrapper">
+{#    <div id="page-wrapper">#}
         <div class="container-fluid">
             <div class="row">
-                <div class="col-12">
+                <div class="col-md-12">
                     <h1 class="page-header">{{ header }}</h1>
                 </div>
                 <!-- /.col-lg-12 -->
@@ -196,7 +196,7 @@
             <!-- /.row -->
         </div>
         <!-- /.container-fluid -->
-    </div>
+{#    </div>#}
     <!-- /#page-wrapper -->
 
 {% endblock %}
@@ -214,10 +214,12 @@
         // <i class="fa fa-spinner fa-spin"></i>
         // add button class: disabled
 
-        var base_url = 'http://192.168.99.100/crawler/'
+        var base_url = 'http://localhost:6800/'
         var list_jobs = 'listjobs.json?project=gscholar_scraper'
         // without start_authors the spider does nothing
-        var schedule_spider = 'schedule.json?project=gscholar_scraper&spider=author_complete'
+        // we do not want to crall co-authors of co-authors,
+        // so we set the depth limit to 1
+        var schedule_spider = 'schedule.json?project=gscholar_scraper&spider=author_complete&setting=DEPTH_LIMIT=1'
 
         function doPoll(job_id){
             // while our job is not yet done, we poll again
@@ -235,8 +237,9 @@
                         // check that our job is finished
                         // console.log(msg)
 
-                        var finished = msg.finished;
+                        finished = (msg.finished === undefined ? [] : msg.finished);
                         var found = false;
+                        console.log(finished)
                         for (var i = 0; i < finished.length; i++) {
                             if (finished[i].id == job_id) {
                                 found = true;
@@ -262,7 +265,7 @@
             // Set throbber (waiting spinner)
             // get the button
             $('#refresh_author').html("<i class='fa fa-spinner fa-spin'></i> Refreshing...")
-
+            console.log('scheduling...')
             $.post(base_url + schedule_spider + '&start_authors={{ researcher.id }}', function(data) {
                console.log(data);
                 doPoll(data.jobid);

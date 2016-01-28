@@ -4,10 +4,83 @@
 {% block content %}
 
 
-    <div id="page-wrapper">
+{#    <div id="page-wrapper">#}
+    <div class="jumbotron">
+        <div class="container-fluid">
+            <div class="center-block">
+                <h1>Google Scholar Analyser</h1>
+                <p class="lead">Crawl and analyse authors that have a profile on Google Scholar.</p>
+                <div class="row">
+                    <div class="col-lg-4 col-md-6">
+                        <div class="panel">
+                            <div class="panel-heading">
+                                <div class="row">
+                                    <div class="col-xs-3">
+                                        <i class="fa fa-paper-plane fa-5x"></i>
+                                    </div>
+                                    <div class="col-xs-9 text-right">
+                                        <p>Browse documents, authors and fields of study that were scraped by the system.</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <a href="/browse">
+                                <div class="panel-footer">
+                                    <span class="pull-left">Learn more!</span>
+                                    <span class="pull-right"><i class="fa fa-arrow-circle-right"></i></span>
+                                    <div class="clearfix"></div>
+                                </div>
+                            </a></div>
+                    </div>
+                    <div class="col-lg-4 col-md-6">
+                        <div class="panel">
+                            <div class="panel-heading">
+                                <div class="row">
+                                    <div class="col-xs-3">
+                                        <i class="fa fa-bar-chart fa-5x"></i>
+                                    </div>
+                                    <div class="col-xs-9 text-right">
+                                        <p>Visualize the data that you scraped and discover geographical connections.</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <a href="/visualizations">
+                                <div class="panel-footer">
+                                    <span class="pull-left">Learn more!</span>
+                                    <span class="pull-right"><i class="fa fa-arrow-circle-right"></i></span>
+                                    <div class="clearfix"></div>
+                                </div>
+                            </a></div>
+                    </div>
+                    <div class="col-lg-4 col-md-6">
+                        <div class="panel">
+                            <div class="panel-heading">
+                                <div class="row">
+                                    <div class="col-xs-3">
+                                        <i class="fa fa-sort-amount-desc fa-5x"></i>
+                                    </div>
+                                    <div class="col-xs-9 text-right">
+                                        <p>Scrape multiple researchers at once and compare their key performance
+                            metrics.</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <a href="/multisearch">
+                                <div class="panel-footer">
+                                    <span class="pull-left">Learn more!</span>
+                                    <span class="pull-right"><i class="fa fa-arrow-circle-right"></i></span>
+                                    <div class="clearfix"></div>
+                                </div>
+                            </a></div>
+                    </div>
+                </div>
+                <p class="lead">Below you can find some statistics about the data in the system.</p>
+            </div>
+        </div>
+    </div>
+    <div class="container-fluid">
         <div class="row">
             <div class="col-lg-12">
-                <h1 class="page-header">{{ title }}</h1>
+                <h1 class="page-header">Current Statistics</h1>
             </div>
             <!-- /.col-lg-12 -->
         </div>
@@ -27,7 +100,6 @@
             </div>
         {% endif %}
 
-
         <div class="row">
             <div class="col-lg-3 col-md-6">
                 <div class="panel panel-primary">
@@ -44,7 +116,7 @@
                     </div>
                     <a href="/documents">
                         <div class="panel-footer">
-                            <span class="pull-left">Explore</span>
+                            <span class="pull-left">Full List</span>
                             <span class="pull-right"><i class="fa fa-arrow-circle-right"></i></span>
                             <div class="clearfix"></div>
                         </div>
@@ -66,7 +138,7 @@
                     </div>
                     <a href="/researchers">
                         <div class="panel-footer">
-                            <span class="pull-left">Explore</span>
+                            <span class="pull-left">Full List</span>
                             <span class="pull-right"><i class="fa fa-arrow-circle-right"></i></span>
                             <div class="clearfix"></div>
                         </div>
@@ -88,7 +160,7 @@
                     </div>
                     <a href="/researchers">
                         <div class="panel-footer">
-                            <span class="pull-left">Explore</span>
+                            <span class="pull-left">Full List</span>
                             <span class="pull-right"><i class="fa fa-arrow-circle-right"></i></span>
                             <div class="clearfix"></div>
                         </div>
@@ -108,9 +180,9 @@
                             </div>
                         </div>
                     </div>
-                    <a href="/fos">
+                    <a href="/fields">
                         <div class="panel-footer">
-                            <span class="pull-left">Explore</span>
+                            <span class="pull-left">Full List</span>
                             <span class="pull-right"><i class="fa fa-arrow-circle-right"></i></span>
                             <div class="clearfix"></div>
                         </div>
@@ -687,6 +759,7 @@
 {#        </div>#}
         <!-- /.row -->
     </div>
+{#    </div>#}
     <!-- /#page-wrapper -->
 
 {% endblock %}
