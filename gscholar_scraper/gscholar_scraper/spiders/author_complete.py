@@ -9,7 +9,7 @@ from scrapy.loader import ItemLoader
 from sqlalchemy import or_
 
 import gscholar_scraper.utils as utils
-from gscholar_scraper.items import AuthorItem, DocItem, CoAuthorItem
+from gscholar_scraper.items import AuthorItem, DocItem, CoAuthorItem, FOSItem
 from gscholar_scraper.models import windowed_query
 from gscholar_scraper.spiders.base import DBConnectedSpider
 
@@ -22,13 +22,24 @@ class AuthorComplete(DBConnectedSpider):
 
     pattern = 'https://scholar.google.de/citations?hl=de&user={0}&cstart=0&pagesize=100'
 
+    custom_settings = {
+        # This configures how many colleagues (in terms of link depth) should be scraped.
+        # A number of '1' means 'co-authors of the starting author', '2' means 'co-authors of co-
+        # authors of the starting author', etc...
+        # A limit of 3 runs really long, so be warned!
+        'DEPTH_LIMIT' : 2
+    }
+
     def __init__(self, start_authors=None, *args, **kwargs):
         if start_authors:
             self.logger.info('Starting with given authors: %s' % start_authors)
             self.start_urls = [self.pattern.format(id) for id in start_authors.split(',')]
         else:
             self.logger.error('No specific author given. Will not crawl anything.')
+
         super(self.__class__, self).__init__(*args, **kwargs)
+
+        # Only crawl depth 3 with colleagues (hopefully)
 
         # author profiles with cstart and pagesize parameters
         self.container = []
@@ -37,14 +48,17 @@ class AuthorComplete(DBConnectedSpider):
         # do not choose from database if we only want to scrape the given authors
         return utils.pop_random(self.container)
 
+    def parse_co_authors_list(self, response):
+        return response.xpath('//li/a[@class="gsc_rsb_aa"]/@href').extract()
+
     def parse_profile(self, response, author_id, old_start):
         self.logger.info('Parsing main profile for author %s.' % author_id)
 
-        authorItem = AuthorItem()
-        authorItem['id'] = author_id
-
         #crawl 'organisation id' and 'measurements' only at the first time, we look at that author profile
         if old_start == 0:
+            authorItem = AuthorItem()
+            authorItem['id'] = author_id
+
             orgMatch = re.search('org=(\d+)"', response.xpath('//div[@class="gsc_prf_il"]').extract_first())
             org = orgMatch.group(1) if orgMatch else None
             co_authors_link = response.xpath('//h3/a[@class="gsc_rsb_lc"]/@href').extract_first()
@@ -59,6 +73,10 @@ class AuthorComplete(DBConnectedSpider):
             urls = response.xpath('//*[@id="gsc_prf_i"]/div/a[@class="gsc_prf_ila"]/@href').extract()
             labels = [urlparse.parse_qs(urlparse.urlparse(url).query)['mauthors'][0].split(':')[1]
                       for url in urls]
+            for f in labels:
+                it = ItemLoader(item=FOSItem(), response=response)
+                it.add_value('field_name', f)
+                yield it.load_item()
 
             item.add_value('fos', labels)
             # additional items
@@ -71,9 +89,12 @@ class AuthorComplete(DBConnectedSpider):
 
             # Crawl colleagues
             if co_authors_link:
-                link = urlparse.urljoin(response.url, co_authors_link)
-                self.logger.debug('Requesting co-authors with link %s' % link)
-                yield Request(url=link)
+                # list of relative urls to coauthors pages
+                co_authors = self.parse_co_authors_list(response)
+                for co in co_authors:
+                    link = urlparse.urljoin(response.url, co + '&cstart=0&pagesize=100')
+                    self.logger.debug('Requesting co-author with link %s' % link)
+                    yield Request(url=link)
 
 
         # crawl the author's documents
@@ -96,7 +117,7 @@ class AuthorComplete(DBConnectedSpider):
             il.add_xpath('cite_count', './td[@class="gsc_a_c"]/a/text()')
             il.add_xpath('year', './td[@class="gsc_a_y"]//text()')
             yield il.load_item()
-        self.logger.info('Scraped %d documents for author %s after item %d.' % (num_pubs, author_id, old_start))
+        self.logger.info('Scraped %d documents for author %s after item %s.' % (num_pubs, author_id, old_start))
         # btn for next documents:
         btnEnabled = response.xpath('//button[@id="gsc_bpf_next" and not(contains(@class ,"gs_dis"))]').extract_first()
         if btnEnabled:
