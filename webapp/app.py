@@ -23,6 +23,8 @@ import json
 import grequests
 
 import queries.co_network as co
+import queries.geo_m as geo_m
+import queries.geo_c as geo_c
 from queries.dashboard import avg_measures_sql,top_authors_m, time_series_documents, time_series_cited
 import queries.compare as cmp
 
@@ -109,36 +111,27 @@ def get_metrics():
         'num_fields': session.query(func.count(Label.field_name)).scalar(),
     }
 
-@cache.cached(timeout=30, key_prefix='get_rankings')
-def rankings():
-    top_q = top_authors_m(1,10)
-    ts_docs_q = time_series_documents()
-    ts_cites = time_series_cited()
-    return {
-        'ranks': session.execute(top_q).scalar(),
-        'series_doc': session.execute(ts_docs_q).scalar(),
-        'series_cities': session.execute(ts_cites).scalar()
-    }
+# @cache.cached(timeout=30, key_prefix='get_rankings')
+# def rankings():
+   # top_q = top_authors_m(1,10)
+   # ts_docs_q = time_series_documents()
+   # ts_cites = time_series_cited()
+    # return {
+    #     'ranks': session.execute(top_q).scalar(),
+     #   'series_doc': session.execute(ts_docs_q).scalar(),
+    #    'series_cities': session.execute(ts_cites).scalar()
+   # }
 
 @app.route('/', methods=['GET'])
 def index():
     errors = []
-    ranks = []
-    series_docs = []
-    series_cites = []
-    metrics = None
-
     try:
-        r = rankings()
-        ranks = r['ranks']
-        series_doc = r['series_doc']
-        series_cities = r['series_cities']
         metrics = get_metrics()
         # num_authors = session.query(func.count(Author.id)).scalar()
     except Exception as e:
         errors.append(e)
-        return render_template('pages/index.html', errors=errors, rankings=ranks, metrics=None)
-    return render_template('pages/index.html', errors=errors, rankings=ranks, metrics=metrics, num_authors=metrics['num_authors'])
+        return render_template('pages/index.html', errors=errors,  metrics=None)
+    return render_template('pages/index.html', errors=errors,  metrics=metrics, num_authors=metrics['num_authors'])
 
 def extract_links(text):
     """Extracts links from a list of links divided by new lines
@@ -214,6 +207,16 @@ def field_term(search_term):
     return '_'.join(search_term.lower().split(' '))
 
 
+@app.route('/top')
+def top():
+    errors = []
+    result = []
+    try:
+        result = session.execute(top_authors_m(3,10))
+    except Exception as e:
+        errors.append(e)
+    return render_template('pages/top.html',errors=errors, rankings=result)
+
 @app.route('/getRankings/<m>', methods=['GET', 'POST'])
 def getRankings(m):
     errors = []
@@ -224,6 +227,9 @@ def getRankings(m):
         errors.append(e)
     return jsonify(results = [dict(row) for row in result], errors =errors)
 
+@app.route('/tempDev')
+def temp_home():
+    return render_template('pages/temp_dev.html')
 
 @app.route('/getTimeSeries', methods=['GET','POST'])
 def getTimeSeries():
@@ -232,8 +238,8 @@ def getTimeSeries():
     try:
         ts_docs_q = time_series_documents()
         ts_cites = time_series_cited()
-        docCounts = session.execute(ts_docs_q).scalar(),
-        citeCounts = session.execute(ts_cites).scalar()
+        docCounts = session.execute(ts_docs_q)
+        citeCounts = session.execute(ts_cites)
         results = [[dict(row) for row in docCounts], [dict(row) for row in citeCounts]]
     except Exception as e:
         errors.append(e)
@@ -276,6 +282,7 @@ def none_to_empty_str(data):
 @app.route('/researchers', methods=['GET'])
 def researchers():
     return render_template('pages/researchers.html')
+
 
 
 @app.route('/api/researchers', methods=['GET'])
@@ -439,6 +446,83 @@ def getExtended():
         errors.append(e)
     return jsonify(results = results, errors =errors)
 
+# geoanalytics: measures (dot map)
+@app.route('/geo_m/home')
+def geo_m_home():
+    return render_template('pages/geo_measures.html')
+
+@app.route('/geo_m/getData/<i>',  methods=['GET', 'POST'])
+def geo_m_getData(i):
+    errors = []
+    results = []
+    try:
+        d = session.execute(geo_m.getData(i))
+        results = [dict(row) for row in d]
+    except Exception as e:
+        errors.append(e)
+    return jsonify(results=results, errors=errors)
+
+@app.route('/geo_m/getClosest',  methods=['POST'])
+def geo_m_getClosest():
+    results = []
+    errors = []
+    try:
+        d = session.execute(geo_m.getClosest(request.json['lat'],request.json['lng'], request.json['zoom']))
+        results = [dict(row) for row in d]
+    except Exception as e:
+        errors.append(e)
+    print errors
+    return jsonify(results=results, errors=errors)
+
+# geoanalytics: coauthors
+@app.route('/geo_c/home')
+def geo_c_home():
+    return render_template('pages/geo_co.html')
+
+@app.route('/geo_c/getInitData',  methods=['GET', 'POST'])
+def geo_c_getInitData():
+    errors = []
+    results = []
+    try:
+        d = session.execute(geo_c.initData)
+        results = [dict(row) for row in d]
+    except Exception as e:
+        errors.append(e)
+    return jsonify(results=results, errors=errors)
+
+@app.route('/geo_c/getEdgeData/<o>',  methods=['GET', 'POST'])
+def geo_c_getEdgeData(o):
+    errors = []
+    results = []
+    try:
+        d = session.execute(geo_c.getEdgeData(o))
+        results = [dict(row) for row in d]
+    except Exception as e:
+        errors.append(e)
+    return jsonify(results=results, errors=errors)
+
+@app.route('/geo_c/getSugg/<t>',  methods=['POST'])
+def geo_c_getSugg(t):
+    errors = []
+    results = []
+    try:
+        d = session.execute(geo_c.getSugg(t))
+        results = [dict(row) for row in d]
+    except Exception as e:
+        errors.append(e)
+    return jsonify(results=results, errors=errors)
+
+@app.route('/geo_c/getClosest',  methods=['POST'])
+def geo_c_getClosest():
+    results = []
+    errors = []
+    try:
+        d = session.execute(geo_c.getClosest(request.json['lat'],request.json['lng'], request.json['zoom'], request.json['selected']))
+        results = [dict(row) for row in d]
+    except Exception as e:
+        errors.append(e)
+    print errors
+    return jsonify(results=results, errors=errors)
 
 @app.route('/schedule', methods=['POST'])
 def schedule_spider():
@@ -455,6 +539,11 @@ def schedule_spider():
             status=r.status_code,
             content_type=r.headers['content-type']
     )
+
+
+@app.route('/explore', methods=['GET'])
+def explore():
+    return render_template('pages/explore.html')
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)
