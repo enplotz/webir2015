@@ -1,30 +1,13 @@
 # GScholar Scraper Spider
 
-The spiders can be run locally or using the scrapyd daemon. The native installation is intended for easier testing,
-whereas the docker version supports a much more stable and quick setup if you just want to run the platform.
+The spiders can be run locally (in the current shell) or using the scrapyd daemon. The following part describes the 
+local installation and configuration necessary to run the scrapy spiders.
 
-## Using Docker
-
-The PostgreSQL storage pipeline uses the environment variables present on the system that runs `scrapyd`.
-
-### Deploy Spider Using `docker-scrapyd`
-
-*Note:* If you are using `docker-machine` (so you are on Mac OS or Windows), you have to put the machines IP address into `scrapy.cfg`
-(under the [deploy:docker] section). If docker is running locally on your machine (e.g. Linux) put `localhost` there.
-
-Deploy the scrapy project to scrapyd running in the docker container.
-```
-scrapy-deploy docker
-```
-
-## Native Installation
-
-The following part describes the local installation and configuration necessary to run the scrapy spiders.
-
-### Installation
+## Installation
 
 The project uses Python 2.7 and assumes a PostgreSQL installation of at least version 9.4.
 All required libraries are named in `requirements.txt`. Install them with `pip install -r requirements.txt`.
+It is advised to use a Python virtualenv.
 
 For the proxy connection a socks proxy (e.g. tor) can be used, together with a http proxy
 to fire the actual requests against.
@@ -42,8 +25,9 @@ middleware in the scrapy settings.
 Environment variables (or crawler settings) are used to configure credentials like passwords or database connections.
  The files `*.env-sample` contain all parameters that are currently used (with placeholders). To provide your values,
  strip the suffix `-sample` from the files and fill in your values.
- So the file `database.env` contains the correct postgres connection credentials. The docker-compose file automatically
- includes these files, but what about command-line execution? For this, you can export the variables as environment variables.
+ So the file `database.env` contains the correct postgres connection credentials. To actually use the values,
+ you can export the variables as *environment variables*.
+ 
  Prefix your command `foo` like so:
 ```
 export $(cat ../*.env | xargs) && foo`
@@ -73,26 +57,29 @@ File: `database.env`
 
 ### Deploy Spider Using Local Scrapyd
 
-If you do not want to use docker, but still want to use scrapyd, you can just run scrapyd and deploy your projects
-locally:
+For the web-based scraping, you have to use scrapyd. The following commands export the variables (from one level up),
+start the service and background the process.
 
 ```
-$ scrapyd &
+$ mkdir scrapyd-workdir && cd scrapyd-workdir
+$ export $(cat ../*.env | xargs) && scrapyd &
 ```
 
-Then in another shell in the `gscholar_scraper` directory run:
+Now go to the `gscholar_scraper` directory and run:
 ```
 $ scrapy-deploy
 ```
+This command deploys your scrapy project to the locally running scrapyd instance.
 
-Then schedule the spiders via the commands outline in *Testing Spiders Deployed To Scrapyd*.
+You can then schedule the spiders via the commands outlined in *Testing Spiders Deployed To Scrapyd*.
 
 ### Run Spider Without Scrapyd
 
 To run the spiders locally, issue the crawl command from the scrapy project directory (so, where the `scrapy.cfg` is).
-You can list available spiders and run them.
+You can list available spiders and run them. As before, we export the env variables before running the actual command.
+
 ```
-scrapy crawl your_spiders_name
+export $(cat ../*.env | xargs) && scrapy crawl your_spiders_name
 ```
 
 To pass spider settings, you can use the `-a` flag, e.g. `scrapy crawl dmoz -a my_param=itworks`.
