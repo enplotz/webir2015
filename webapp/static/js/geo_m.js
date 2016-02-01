@@ -21,6 +21,9 @@ $(function () {
 												
 												
 												}
+												var l = $('#legend').data('obj');
+												var c = __scale.copy();
+												l.setScale({type:'log', scale: c});
 												
 												
 											},ui.item.index)		 
@@ -44,7 +47,7 @@ $(function () {
 				var ex = d3.extent(__maindata, function(d){return parseInt(d.val)}); 
 				__scale = d3.scale.log().base(2.7).domain([10, ex[1]]).range(['black','#74B3E8']);
 				__maindata.forEach(function(obj){
-					console.log(obj); 
+
 					if (!lookup.hasOwnProperty(obj.id)) lookup[obj.id] = {}; 
 						
 					lookup[obj.id][i]= obj.val; 
@@ -110,7 +113,13 @@ $(function () {
 					
 				
 				
-			}); 
+			});
+		    new spatLegend('#legend');
+			__wrapper.map.controls[google.maps.ControlPosition.RIGHT_BOTTOM].push($('#legendwrapper').get(0));
+			$('#legendwrapper').fadeIn();
+			var l = $('#legend').data('obj');
+			var c = __scale.copy();
+			l.setScale({type:'log', scale: c});
 			  var input = $('#search').get(0);
 			  var searchBox = new google.maps.places.SearchBox(input);
 			  __wrapper.map.controls[google.maps.ControlPosition.TOP_LEFT].push(input);
@@ -138,9 +147,7 @@ $(function () {
 						 .attr('class', 'fu')
 				         .style('fill',function(d){ 
 							 return __scale(d.val)})
-				         .style('opacity',0.7).on('click', function(d){
-							 console.log(d3.select(this)); 
-						 }).style('stroke','steelblue').style('stroke-width',0.5); 
+				         .style('opacity',0.7).style('stroke','steelblue').style('stroke-width',0.5);
 
 		    
 			function setPos(d) {			

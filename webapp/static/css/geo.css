@@ -70,3 +70,22 @@ border: 10px solid red;
 #measureWrapper { 
 display:none; 
 }
+
+	#legendwrapper {
+    display: none;
+    background: rgba(0, 0, 0, 0.4);
+    padding-left: 2px;
+}
+
+#legend {
+    padding: 2px;
+    padding-right: 0px; //done by d3
+    padding-left: 0px;
+    width: 235px;
+    height: 30px;
+}
+
+#legend text {
+    font-size: 9px;
+	fill:white;
+}

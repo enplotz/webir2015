@@ -81,7 +81,7 @@ $(function () {
 					data: JSON.stringify({lat:event.latLng.lat(), lng:event.latLng.lng(), zoom: __wrapper.map.getZoom(), selected: getSelected2().toString()}, null, '\t'),
 					dataType:'json',
 					contentType: "application/json; charset=utf-8"}).done(function(data){
-					console.log(data);
+
 					if (data.results.length>0){
 						if (lookup.hasOwnProperty(data.results[0].id)){
 							var sel = getSelected(); 
@@ -186,8 +186,7 @@ $(function () {
 				if (tgt){			
 					var sndCoordinates = {lat:parseFloat(tgt.lng), lng:parseFloat(tgt.lat)}; 
 					var polyline = new google.maps.Polyline({strokeColor:'#4AB6FF', clickable:false, count: obj.data[prop], source:obj.org, target:prop, strokeOpacity:0.7, strokeWeight:0.3, geodesic:true, path:[firstCoordinates,sndCoordinates]});
-					edgecache[obj.org].push(polyline); 
-					console.log(polyline.getPath()); 
+					edgecache[obj.org].push(polyline);
 					polyline.setMap(__wrapper.map);  
 				}
 			}	
