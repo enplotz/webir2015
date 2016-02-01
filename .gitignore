@@ -62,12 +62,14 @@ target/
 # SQLite Database
 *.db
 
-# Ignore environment variables
-.env
-
 # Ignore spider state directory
 crawls/
 # Ignore scraped items flat files 
 gscholar_scraper/items/
+# Ignore real configured environment files
 *.env
+# Ignore postfixed files, like database.env.local
+# You can use this for testing several configs
+*.env.*
+# Work directory of the scrapyd service
 scrapyd-workdir/
