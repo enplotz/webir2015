@@ -101,7 +101,7 @@ def friendly_time(dt, past_="ago",
     return default
 
 # Cache for x seconds
-@cache.cached(timeout=30, key_prefix='get_metrics')
+@cache.cached(timeout=180, key_prefix='get_metrics')
 def get_metrics():
     # Use func.count to only count ids
     return {
@@ -111,16 +111,6 @@ def get_metrics():
         'num_fields': session.query(func.count(Label.field_name)).scalar(),
     }
 
-# @cache.cached(timeout=30, key_prefix='get_rankings')
-# def rankings():
-   # top_q = top_authors_m(1,10)
-   # ts_docs_q = time_series_documents()
-   # ts_cites = time_series_cited()
-    # return {
-    #     'ranks': session.execute(top_q).scalar(),
-     #   'series_doc': session.execute(ts_docs_q).scalar(),
-    #    'series_cities': session.execute(ts_cites).scalar()
-   # }
 
 @app.route('/', methods=['GET'])
 def index():
@@ -132,6 +122,15 @@ def index():
         errors.append(e)
         return render_template('pages/index.html', errors=errors,  metrics=None)
     return render_template('pages/index.html', errors=errors,  metrics=metrics, num_authors=metrics['num_authors'])
+
+@app.route('/browse', methods=['GET'])
+def browse():
+    errors = []
+    try:
+        metrics = get_metrics()
+    except Exception as e:
+        errors.append(e)
+    return render_template('pages/browse.html', errors=errors, metrics=metrics)
 
 def extract_links(text):
     """Extracts links from a list of links divided by new lines

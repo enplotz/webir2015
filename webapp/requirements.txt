@@ -12,3 +12,4 @@ Flask-SQLALchemy-Session
 requests
 gunicorn
 grequests
+sqlalchemy-datatables
