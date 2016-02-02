@@ -10,7 +10,7 @@ import urllib2
 import scrapy
 from scrapy.item import Item, Field
 from scrapy.loader.processors import TakeFirst, MapCompose
-from sqlalchemy import Column, TIMESTAMP, Index
+from sqlalchemy import Column, TIMESTAMP, Index, Float
 from sqlalchemy import Integer, String, Boolean, Text
 from sqlalchemy import func
 from sqlalchemy.dialects import postgresql
@@ -131,6 +131,8 @@ class DocItem(GScholarItem):
         output_processor = TakeFirst()
     )
 
+class OrgItem(GScholarItem):
+    pass
 
 class CategoryItem(GScholarItem):
 
@@ -150,3 +152,21 @@ class SubCategoryItem(GScholarItem):
     # top 20 list of publications listed on google scholar
     # will be a list for now
     publications = scrapy.Field()
+
+class OrgItem(GScholarItem):
+
+    class Model(DeclarativeBase):
+        """Sqlalchemy authors model"""
+        __tablename__ = "org2"
+
+        id = Column(String, primary_key=True)
+        name = Column(String)
+        addr = Column(String)
+        lng = Column(Float(Precision=64))
+        lat = Column(Float(Precision=64))
+
+    id = scrapy.Field(output_processor=TakeFirst())
+    name = scrapy.Field(output_processor=TakeFirst())
+    addr = scrapy.Field(output_processor=TakeFirst())
+    lng = scrapy.Field(output_processor=TakeFirst())
+    lat = scrapy.Field(output_processor=TakeFirst())

@@ -1,25 +1,14 @@
-import scrapy
-import re
-from gscholar_scraper.items import FOSItem, AuthorItem, OrgItem
-from scrapy.http import Request
-from scrapy.loader import ItemLoader
-import gscholar_scraper.utils as utils
-from models import db_connect, windowed_query, column_windows
-from sqlalchemy.orm import sessionmaker
-import random
 import urllib2
 
+from scrapy.http import Request
+from scrapy.loader import ItemLoader
 
-def all_fields():
-    engine = db_connect()
-    session = sessionmaker(bind=engine)()
+import gscholar_scraper.utils as utils
+from gscholar_scraper.items import AuthorItem, OrgItem
+from gscholar_scraper.spiders.base import DBConnectedSpider
 
-    try:
-        return (session.query(AuthorItem.Model.org).filter(AuthorItem.Model.org != None)).distinct().all()
-    finally:
-        session.close()
 
-class OrgName(scrapy.Spider):
+class OrgName(DBConnectedSpider):
     name = "org_name"
     handle_httpstatus_list = [200, 302, 400, 402, 503]
     pattern = 'https://scholar.google.de/citations?view_op=view_org&hl=de&org={0}'
@@ -28,7 +17,7 @@ class OrgName(scrapy.Spider):
         super(self.__class__, self).__init__(*args, **kwargs)
 
         # fields from the database
-        self.fields = all_fields()
+        self.fields = self.all_fields()
 
 
         # select a field to start at
@@ -38,6 +27,14 @@ class OrgName(scrapy.Spider):
             enc = urllib2.quote(start_org.encode('utf-8')).encode('ASCII')
             self.curr = enc
             self.start_urls = [self.pattern.format(enc)]
+
+    def all_fields(self):
+        session = self.create_session()
+
+        try:
+            return (session.query(AuthorItem.Model.org).filter(AuthorItem.Model.org != None)).distinct().all()
+        finally:
+            session.close()
 
     def next_label_from_db(self):
         next_label = utils.pop_random(self.fields)

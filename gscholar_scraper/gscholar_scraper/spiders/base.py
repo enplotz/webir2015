@@ -17,22 +17,3 @@ class DBConnectedSpider(scrapy.Spider):
         self.engine = create_engine(URL(**db_settings(settings)))
         self.sessionmaker = sessionmaker(bind=self.engine)
         return self.sessionmaker()
-
-# self.engine = create_engine(URL(**self.db_settings))
-# self.sessionmaker = sessionmaker(bind=self.engine)
-#
-# @classmethod
-#     def from_crawler(cls, crawler):
-#         return cls(
-#                 db_connection(crawler)
-#             )
-#
-#     def open_spider(self, spider):
-#         self.engine = create_engine(URL(**self.db_settings))
-#         DeclarativeBase.metadata.create_all(self.engine)
-#
-#         self.sessionmaker = sessionmaker(bind=self.engine)
-#         spider.logger.info('Created sessionmaker for database %s' % self.db_settings.get('database'))
-#
-#     def close_spider(self, spider):
-#         self.engine.dispose()
