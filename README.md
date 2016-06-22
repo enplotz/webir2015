@@ -1,3 +1,5 @@
+**Note:** Work on this project continues in our Bitbucket Organization's repository: [sciplore/grespa](https://bitbucket.org/sciplore/grespa). 
+
 # [Project] Web Information Retrieval 2015
 
 Task: Crawling and Analysis of Google Scholar
